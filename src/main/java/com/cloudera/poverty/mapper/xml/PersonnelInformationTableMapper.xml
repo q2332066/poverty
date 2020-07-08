@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cloudera.poverty.mapper.PersonnelInformationTableMapper">
+    <sql id="columns">
+    p.id
+    </sql>
+    <sql id="tables">
+        personnel_information_table as p,
+        industrial_policy_table as I,
+        career_policy_table as C,
+        enjoy_help_policy_table as E,
+        cultivation as Cu,
+        resettlement_point_table as R,
+        township_table as T,
+        district_table as D,
+        city as Ci
+    </sql>
+    <insert id="insertPer" parameterType="com.cloudera.poverty.entity.api.PersonnelInformationTable">
+ INSERT INTO
+ personnel_information_table
+ (p_id,host,name,relationship,id_card,population,labor_number,moved_out,move_in,arrangement,resettlement_point_id,education,state_of_healths,labor_skills,cause_poverty,average_income,phone,remarks,torf_host,host_id,torf_labor,torf_poor,poor_time,house_area,torf_live,specific_addr,torf_dismantle)
+  VALUES
+   (#{pId},#{host},#{name},#{relationship},#{idCard},#{population},#{laborNumber},#{movedOut},#{moveIn},#{arrangement},#{resettlementPointId},#{education},#{stateOfHealths},#{laborSkills},#{causePoverty},#{averageIncome},#{phone},#{remarks},#{torfHost},#{hostId},#{torfLabor},#{torfPoor},#{poorTime},#{houseArea},#{torfLive},#{specificAddr},#{torfDismantle})
+
+
+    </insert>
+    <select id="selectAllPerson" resultType="com.cloudera.poverty.entity.vo.PersonGetAllVo">
+      select
+        *
+        from
+        personnel_information_table  P
+        left join
+        industrial_policy_table  I
+        on P.p_id=I.personnel_information_id
+        left join
+        career_policy_table Ca
+        on P.p_id=Ca.personnel_information_id
+        left join
+        enjoy_help_policy_table E
+        on P.p_id=E.personnel_information_id
+        left join
+        resettlement_point_table R
+        on P.resettlement_point_id=R.r_id
+        left join
+        township_table T
+        on R.township_id=T.t_id
+        left join
+        district_table D
+        on T.district_id=D.d_id
+        left join
+        city Ci
+        on D.city_id=Ci.ci_id
+     ${ew.customSqlSegment}
+    </select>
+    <select id="selectListAll" resultType="com.cloudera.poverty.entity.vo.PersonGetAllVo">
+     select
+d.district ,
+c.township ,
+b.resettlement_point ,
+b.place_num_p ,
+b.place_num_h ,
+b.longitude ,
+b.latitude ,
+b.school_name ,
+b.school_number ,
+b.kindergarten_name ,
+b.kindergarten_number ,
+b.hospital_name ,
+b.hospital_number ,
+b.library_name ,
+b.library_number ,
+b.drive_sun ,
+b.drive_num ,
+a.`host` ,
+a.`name` ,
+a.relationship ,
+a.id_card ,
+a.population ,
+a.labor_number ,
+a.moved_out ,
+a.arrangement ,
+a.education ,
+a.state_of_healths ,
+a.labor_skills ,
+a.cause_poverty ,
+a.average_income ,
+a.phone ,
+a.remarks ,
+e.outside_province ,
+e.within_county ,
+e.outside_county ,
+e.community_driven ,
+e.public_welfare ,
+e.entrepreneurship ,
+e.agriculture ,
+e.estimated_income ,
+e.reason ,
+e.employment_training_time ,
+e.employment_training_content ,
+e.vocational_training_time ,
+e.vocational_training_content ,
+e.entrepreneurship_training_time ,
+e.entrepreneurship_training_content ,
+e.development ,
+e.year_increase ,
+f.business_entity ,
+f.driving_method ,
+f.drive_income ,
+f.ndustry_awards ,
+f.policy_subsidies ,
+f.agricultural_training ,
+f.agricultural_content ,
+g.relocation_allowance ,
+g.education_guarantee_school ,
+g.type_subsidy ,
+g.education_grant_amount,
+g.ncms_reduction ,
+g.Reimbursement_combined_therapy ,
+g.lin_compensation ,
+g.ranger_compensation ,
+g.loan_amount ,
+g.Industry_type_scale ,
+g.pension_income ,
+g.old_age_allowance ,
+g.disability_allowance ,
+g.pocket_type ,
+g.pocket_amount ,
+        from
+      personnel_information_table  a
+        left join
+        industrial_policy_table f
+        on a.p_id=f.personnel_information_id
+        left join
+        career_policy_table e
+        on a.p_id=e.personnel_information_id
+        left join
+        enjoy_help_policy_table g
+        on a.p_id=g.personnel_information_id
+        left join
+        resettlement_point_table b
+        on a.resettlement_point_id=b.r_id
+        left join
+        township_table c
+        on b.township_id=c.t_id
+        left join
+        district_table d
+        on c.district_id=D.d_id
+        left join
+        city Ci
+        on D.city_id=Ci.ci_id
+
+    </select>
+    <select id="selectAllPersonCount" resultType="java.lang.Long">
+        select count(p.p_id)
+        from
+        personnel_information_table  P
+        left join
+        industrial_policy_table  I
+        on p.p_id=I.personnel_information_id
+        left join
+        career_policy_table Ca
+        on P.p_id=Ca.personnel_information_id
+        left join
+        enjoy_help_policy_table E
+        on P.p_id=E.personnel_information_id
+        left join
+        resettlement_point_table R
+        on P.resettlement_point_id=R.r_id
+        left join
+        township_table T
+        on R.township_id=T.t_id
+        left join
+        district_table D
+        on T.district_id=D.d_id
+        left join
+        city Ci
+        on D.city_id=Ci.ci_id
+        ${ew.customSqlSegment}
+    </select>
+    <select id="selectIdCard" resultType="java.lang.String">
+        select p_id
+        from
+        personnel_information_table
+        ${ew.customSqlSegment}
+    </select>
+
+</mapper>
