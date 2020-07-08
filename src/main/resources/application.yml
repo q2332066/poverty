@@ -8,12 +8,12 @@ spring:
     name: service-est
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/tcsdata?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF8
-    username: root
-    password: 123456
-#    url: jdbc:mysql://192.168.101.58:3306/tcsdata?serverTimezone=GMT%2B8
+#    url: jdbc:mysql://localhost:3306/tcsdata?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF8
 #    username: root
-#    password: tcbigdata
+#    password: 123456
+    url: jdbc:mysql://192.168.101.58:3306/tcsdata?serverTimezone=GMT%2B8
+    username: root
+    password: tcbigdata
 #    url: jdbc:mysql://192.168.1.91:3306/db2063_pa_est?serverTimezone=GMT%2B8
 #    username: root
 #    password: root
