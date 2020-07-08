@@ -12,7 +12,6 @@ import com.cloudera.poverty.common.utils.JwtUtils;
 import com.cloudera.poverty.entity.vo.PersonGetAllVo;
 import com.cloudera.poverty.entity.vo.PersonQueryVo;
 import com.cloudera.poverty.service.PersonnelInformationTableService;
-import com.sun.javafx.collections.MappingChange;
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
