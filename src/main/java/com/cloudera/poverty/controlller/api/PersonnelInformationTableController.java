@@ -30,8 +30,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -191,27 +194,6 @@ public class PersonnelInformationTableController {
         long total = allVoIPage.getTotal();
         List<PersonGetAllVo> records = allVoIPage.getRecords();
         return Lay.ok().count(total).data(records);
-    }
-
-    @GetMapping("/export")
-    public Lay export(HttpServletRequest request){
-        PersonQueryVo personQueryVo = new PersonQueryVo();
-        personQueryVo.setPage(1L);
-        personQueryVo.setLimit(10L);
-        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
-        String regionalId = (String) claims.get("regional");
-        String level = (String) claims.get("level");
-
-        List<PersonAllVo> records = personnelInformationService.findAllExcel(personQueryVo,level,regionalId).getRecords();
-        String path = this.getClass().getClassLoader().getResource("templates").getPath();
-        String templateFileName =
-                path + File.separator + "allpeople.xlsx";
-
-        // 方案1 一下子全部放到内存里面 并填充
-        String fileName = path + File.separator + System.currentTimeMillis() + ".xlsx";
-        // 这里 会填充到第一个sheet， 然后文件流会自动关闭
-        EasyExcel.write(fileName).withTemplate(templateFileName).sheet().doFill(records);
-        return Lay.ok();
     }
 }
 

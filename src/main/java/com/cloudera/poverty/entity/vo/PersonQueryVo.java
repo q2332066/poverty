@@ -19,4 +19,5 @@ public class PersonQueryVo {
     private String resId;
     private Long page;
     private Long limit;
+    private Integer type;
 }

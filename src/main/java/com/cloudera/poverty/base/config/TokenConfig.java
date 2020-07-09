@@ -17,7 +17,8 @@ public class TokenConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/min/est/user/login",
                         "/region/**",
                         "/min/est/user/get-login-info",
-                        "/min/est/roleauthority/selectAuth");//不拦截
+                        "/min/est/roleauthority/selectAuth",
+                        "/api/est/person/export");//不拦截
     }
 
 //    @Override
