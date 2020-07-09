@@ -52,6 +52,36 @@
         on D.city_id=Ci.ci_id
      ${ew.customSqlSegment}
     </select>
+
+    <select id="selectAllPersonExcel" resultType="com.cloudera.poverty.entity.vo.excel.PersonAllVo">
+      select
+        *
+        from
+        personnel_information_table  P
+        left join
+        industrial_policy_table  I
+        on P.p_id=I.personnel_information_id
+        left join
+        career_policy_table Ca
+        on P.p_id=Ca.personnel_information_id
+        left join
+        enjoy_help_policy_table E
+        on P.p_id=E.personnel_information_id
+        left join
+        resettlement_point_table R
+        on P.resettlement_point_id=R.r_id
+        left join
+        township_table T
+        on R.township_id=T.t_id
+        left join
+        district_table D
+        on T.district_id=D.d_id
+        left join
+        city Ci
+        on D.city_id=Ci.ci_id
+     ${ew.customSqlSegment}
+    </select>
+
     <select id="selectListAll" resultType="com.cloudera.poverty.entity.vo.PersonGetAllVo">
      select
 d.district ,

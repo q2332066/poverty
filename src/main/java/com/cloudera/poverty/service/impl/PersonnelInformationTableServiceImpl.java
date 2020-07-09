@@ -376,4 +376,60 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         List<PersonGetAllVo> records=baseMapper.selectAllPerson(pageParam,wrapper);
         return pageParam.setRecords(records);
     }
+
+    @Override
+    public IPage<PersonAllVo> findAllExcel(PersonQueryVo personQueryVo, String level, String regionalId) {
+        QueryWrapper<PersonAllVo> wrapper=new QueryWrapper<>();
+        wrapper.orderByDesc("P.host_id");
+        if (level.equals("2")){
+            wrapper.eq("D.d_id", regionalId);
+        }
+        if (level.equals("3")){
+            wrapper.eq("T.t_id", regionalId);
+        }
+        if (level.equals("4")){
+            wrapper.eq("P.resettlement_point_id", regionalId);
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getDisId())){
+            wrapper.eq("D.d_id",personQueryVo.getDisId());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getTowId())){
+            wrapper.eq("T.t_id",personQueryVo.getTowId());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getResId())){
+            wrapper.eq("P.resettlement_point_id",personQueryVo.getResId());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getPerId())){
+            wrapper.eq("P.p_id",personQueryVo.getPerId());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getName())){ //姓名
+            wrapper.like("P.name",personQueryVo.getName());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getHost())){ //户主姓名
+            wrapper.eq("P.host",personQueryVo.getHost());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getResettlementPointId())){ //安置点id
+            wrapper.eq("P.resettlement_point_id",personQueryVo.getResettlementPointId());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getArrangement())){  //安置方式
+            if (personQueryVo.getArrangement().equals("1")){
+                wrapper.like("P.arrangement","集中");
+            }
+            if (personQueryVo.getArrangement().equals("2")){
+                wrapper.notLike("P.arrangement","集中");
+            }
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getIdCard())){  //身份证搜索
+            wrapper.like("P.id_card",personQueryVo.getIdCard());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getHostId())){  //户主身份证搜索relationship
+            wrapper.eq("P.host_id",personQueryVo.getHostId());
+        }
+        if (!StringUtils.isEmpty(personQueryVo.getRelationship())){  //户主关系搜索
+            wrapper.eq("P.relationship",personQueryVo.getRelationship());
+        }
+        Page<PersonAllVo> pageParam=new Page<>(personQueryVo.getPage(),personQueryVo.getLimit());
+        List<PersonAllVo> records=baseMapper.selectAllPersonExcel(pageParam,wrapper);
+        return pageParam.setRecords(records);
+    }
 }

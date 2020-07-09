@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudera.poverty.entity.api.PersonnelInformationTable;
 import com.cloudera.poverty.entity.region.ResettlementPointTable;
 import com.cloudera.poverty.entity.vo.PersonGetAllVo;
+import com.cloudera.poverty.entity.vo.excel.PersonAllVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -36,6 +37,9 @@ public interface PersonnelInformationTableMapper extends BaseMapper<PersonnelInf
 
     String selectIdCard(
             @Param(Constants.WRAPPER) QueryWrapper<ResettlementPointTable> wrapper);
+
+    List<PersonAllVo> selectAllPersonExcel(Page<PersonAllVo> pageParam,
+                                           @Param(Constants.WRAPPER) QueryWrapper<PersonAllVo> wrapper);
 }
 
 
