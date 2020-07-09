@@ -190,6 +190,13 @@ public class PersonnelInformationTableController {
         String level = (String) claims.get("level");
 //        String level="2";
 //        String regionalId="13";
+        if(level.equals("2")){
+            regionalId = (String) claims.get("did");
+        } else if(level.equals("3")) {
+            regionalId = (String) claims.get("tid");
+        } else if(level.equals("4")) {
+            regionalId = (String) claims.get("rid");
+        }
         IPage<PersonGetAllVo> allVoIPage=personnelInformationService.findAll(personQueryVo,level,regionalId);
         long total = allVoIPage.getTotal();
         List<PersonGetAllVo> records = allVoIPage.getRecords();

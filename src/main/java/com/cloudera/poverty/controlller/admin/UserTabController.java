@@ -10,6 +10,7 @@ import com.cloudera.poverty.common.utils.JwtUtils;
 import com.cloudera.poverty.entity.admin.UserRole;
 import com.cloudera.poverty.entity.admin.UserTable;
 import com.cloudera.poverty.entity.vo.*;
+import com.cloudera.poverty.service.IRoleService;
 import com.cloudera.poverty.service.IUserRoleService;
 import com.cloudera.poverty.service.UserTabService;
 import io.jsonwebtoken.Claims;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/min/est/user")
@@ -40,6 +42,8 @@ public class UserTabController {
     private UserTabService userTabService;
     @Autowired
     IUserRoleService userRoleService;
+    @Autowired
+    IRoleService roleService;
 
     /**
      * 添加账号
@@ -184,7 +188,15 @@ public class UserTabController {
 
     @ApiOperation("查询账号条件")
     @RequestMapping(value = "selectUser",method = RequestMethod.POST,name = "API-USER")
-    public Lay selectTree(@RequestBody UserQueryVo userQueryVo){
+    public Lay selectTree(@RequestBody UserQueryVo userQueryVo, HttpServletRequest request){
+        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
+
+        userQueryVo.setCityId((String) claims.get("regional"));
+        userQueryVo.setDisId((String) claims.get("did"));
+        userQueryVo.setTowId((String) claims.get("tid"));
+        if(StringUtils.isEmpty(userQueryVo.getResId())){
+            userQueryVo.setResId((String) claims.get("rid"));
+        }
         Long limit = userQueryVo.getLimit();
         Long page = userQueryVo.getPage();
         IPage<UserTableVo> getAllVoList = userTabService.selectAllList(page, limit, userQueryVo);
@@ -193,7 +205,9 @@ public class UserTabController {
         List<UserTableVo> list=new ArrayList<>();
         for (int i = 0; i < records.size(); i++) {
             UserTableVo userTableVo = records.get(i);
-            userTableVo.setRoleId(this.userRoleService.selectIdsByUid(userTableVo.getUId()));
+            List<String> roleid = this.userRoleService.selectIdsByUid(userTableVo.getUId());
+            userTableVo.setRoleId(roleid);
+            userTableVo.setRoleTable(roleid.stream().map(str -> roleService.findById(str)).collect(Collectors.toList()));
             list.add(userTableVo);
         }
         return Lay.ok().count(total).data(list);

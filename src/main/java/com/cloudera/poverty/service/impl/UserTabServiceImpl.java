@@ -224,6 +224,9 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
             if (!StringUtils.isEmpty(userQueryVo.getUserName())){
                 wrapper.eq("P.user_name",userQueryVo.getUserName());
             }
+            if(!StringUtils.isEmpty(userQueryVo.getDisId())){
+                wrapper.eq("P.did",userQueryVo.getDisId());
+            }
             Page<UserTableVo> pageParam=new Page<>(page,limit);
             List<UserTableVo> records=baseMapper.selectAllList(pageParam,wrapper);
             return pageParam.setRecords(records);

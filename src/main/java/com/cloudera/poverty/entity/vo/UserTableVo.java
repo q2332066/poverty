@@ -1,6 +1,7 @@
 package com.cloudera.poverty.entity.vo;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.cloudera.poverty.entity.admin.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,6 +47,7 @@ public class UserTableVo {
     private String resName;
     private String orgPwd;
     private List<String> roleId=new ArrayList<>();
+    private List<Role> roleTable = new ArrayList<>();
 
     @TableId(value = "ci_id", type = IdType.ASSIGN_ID)
     private String ciId;
