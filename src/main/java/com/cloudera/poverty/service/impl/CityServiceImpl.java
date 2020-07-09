@@ -22,10 +22,11 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author ct
@@ -40,70 +41,83 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     private TownshipTableMapper townshipTableMapper;
     @Autowired
     private ResettlementPointTableMapper resettlementPointTableMapper;
+
     @Override
     public List<CityVo> nestList(UserTable userTable) {
         //当前用户等级判断
         Integer level = Integer.valueOf(userTable.getLevel());
 
-        CityVo cityVo=new CityVo();
-         //市
+        CityVo cityVo = new CityVo();
+        //市
         City city = baseMapper.selectById("1");
-        BeanUtils.copyProperties(city,cityVo);
-        String cityId=city.getCiId();
+        BeanUtils.copyProperties(city, cityVo);
+        String cityId = city.getCiId();
         //拿到县districtTable集合
         List<DistrictTable> districtTables = this.selectDis(cityId);
-        List<DistrictVo> districtVoList=new ArrayList<>();
+        List<DistrictVo> districtVoList = new ArrayList<>();
         for (int i = 0; i < districtTables.size(); i++) {
             //遍历区县
             DistrictTable districtTable = districtTables.get(i);
+
+            if(userTable.getDid() != null && !userTable.getDid().equals(districtTable.getDId())){
+                continue;
+            }
+
             //创建区县Vo对象
-            DistrictVo districtVo=new DistrictVo();
-            BeanUtils.copyProperties(districtTable,districtVo);
+            DistrictVo districtVo = new DistrictVo();
+            BeanUtils.copyProperties(districtTable, districtVo);
             String towId = districtTable.getDId();
-                //乡镇
+            //乡镇
             List<TownshipTable> townshipTables = this.selectTow(towId);
-                //当前区县所属乡镇Vo
-                List<TownshipVo> townshipVoList=new ArrayList<>();
-                //遍历乡镇id,查询得到所有安置点,组合乡镇Vo类
-                for (int j = 0; j < townshipTables.size(); j++) {
-                    //遍历乡镇
-                    TownshipTable townshipTable = townshipTables.get(j);
-                    //创建乡镇Vo类,放入数据
-                    TownshipVo townshipVo = new TownshipVo();
-                    BeanUtils.copyProperties(townshipTable,townshipVo);
-                    //乡镇ID
-                    String tableId = townshipTable.getTId();
-                    List<ResettlementPointTable> resettlementPointTables = this.selectRes(tableId);
-                    //安置点进入当前乡镇
-                    townshipVo.setChildren(resettlementPointTables);
-                    //将乡镇放入区县对象乡镇集合
-                    townshipVoList.add(townshipVo);
+            //当前区县所属乡镇Vo
+            List<TownshipVo> townshipVoList = new ArrayList<>();
+            //遍历乡镇id,查询得到所有安置点,组合乡镇Vo类
+            for (int j = 0; j < townshipTables.size(); j++) {
+                //遍历乡镇
+                TownshipTable townshipTable = townshipTables.get(j);
+                if(userTable.getTid() != null && !userTable.getTid().equals(townshipTable.getTId())){
+                    continue;
                 }
-                //设置区县的乡镇对象
+                //创建乡镇Vo类,放入数据
+                TownshipVo townshipVo = new TownshipVo();
+                BeanUtils.copyProperties(townshipTable, townshipVo);
+                //乡镇ID
+                String tableId = townshipTable.getTId();
+                List<ResettlementPointTable> resettlementPointTables = this.selectRes(tableId)
+                        .stream()
+                        .filter(item -> userTable.getRid() == null || item.getRId().equals(userTable.getRid()))
+                        .collect(Collectors.toList());
+                //安置点进入当前乡镇
+                townshipVo.setChildren(resettlementPointTables);
+                //将乡镇放入区县对象乡镇集合
+                townshipVoList.add(townshipVo);
+            }
+            //设置区县的乡镇对象
             districtVo.setChildren(townshipVoList);
 
-                //将区县对象加入区县集合
+            //将区县对象加入区县集合
             districtVoList.add(districtVo);
-            }
+        }
         cityVo.setChildren(districtVoList);
 
-        List<CityVo> list=new ArrayList<>();
+        List<CityVo> list = new ArrayList<>();
         list.add(cityVo);
         return list;
-        }
+    }
 
     //查询市所有区县
     @Override
-    public List<DistrictTable> selectDis(String cityId){
-        QueryWrapper<DistrictTable> districtTableQueryWrapper=new QueryWrapper<>();
-        districtTableQueryWrapper.eq("city_id",cityId);
+    public List<DistrictTable> selectDis(String cityId) {
+        QueryWrapper<DistrictTable> districtTableQueryWrapper = new QueryWrapper<>();
+        districtTableQueryWrapper.eq("city_id", cityId);
         List<DistrictTable> districtTables = districtTableMapper.selectList(districtTableQueryWrapper);
         return districtTables;
     }
+
     //查询所有乡镇
     @Override
-    public List<TownshipTable> selectTow(String districtId){
-        QueryWrapper<TownshipTable> townshipTableQueryWrapper=new QueryWrapper<>();
+    public List<TownshipTable> selectTow(String districtId) {
+        QueryWrapper<TownshipTable> townshipTableQueryWrapper = new QueryWrapper<>();
         QueryWrapper<TownshipTable> district_id = townshipTableQueryWrapper.eq("district_id", districtId);
         List<TownshipTable> townshipTableList = townshipTableMapper.selectList(townshipTableQueryWrapper);
         return townshipTableList;
@@ -112,9 +126,9 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
     //Layui返回
     @Override
     public List<CityAllVo> selectList() {
-        List<CityAllVo> list=new ArrayList<>();
+        List<CityAllVo> list = new ArrayList<>();
         List<City> cities = baseMapper.selectList(null);
-        List list1=new ArrayList();
+        List list1 = new ArrayList();
         for (int i = 0; i < cities.size(); i++) {
             City city = cities.get(i);
             CityAllVo cityAllVo = new CityAllVo();
@@ -160,21 +174,21 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         String dId = cityReVo.getDId();
         String ciId = cityReVo.getCiId();
         String name = cityReVo.getName();
-        if (StringUtils.isEmpty(rId)){
+        if (StringUtils.isEmpty(rId)) {
             ResettlementPointTable resettlementPointTable = new ResettlementPointTable();
             resettlementPointTable.setTownshipId(tId);
             resettlementPointTable.setResettlementPoint(name);
             resettlementPointTableMapper.insert(resettlementPointTable);
             return;
         }
-        if (StringUtils.isEmpty(tId)){
+        if (StringUtils.isEmpty(tId)) {
             TownshipTable townshipTable = new TownshipTable();
             townshipTable.setDistrictId(tId);
             townshipTable.setTownship(name);
             townshipTableMapper.insert(townshipTable);
             return;
         }
-        if (StringUtils.isEmpty(dId)){
+        if (StringUtils.isEmpty(dId)) {
             DistrictTable districtTable = new DistrictTable();
             districtTable.setCityId(ciId);
             districtTable.setDistrict(name);
@@ -185,17 +199,17 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
 
     //查询乡镇所属安置点
 
-    public List<ResettlementPointTableVo> selectRese(String towId){
+    public List<ResettlementPointTableVo> selectRese(String towId) {
 
-        QueryWrapper<ResettlementPointTable> resettlementPointTableQueryWrapper=new QueryWrapper<>();
-        resettlementPointTableQueryWrapper.eq("township_id",towId);
+        QueryWrapper<ResettlementPointTable> resettlementPointTableQueryWrapper = new QueryWrapper<>();
+        resettlementPointTableQueryWrapper.eq("township_id", towId);
         //拿到安置点集合
-        List<ResettlementPointTableVo> list=new ArrayList<>();
+        List<ResettlementPointTableVo> list = new ArrayList<>();
         List<ResettlementPointTable> resettlementPointTables = resettlementPointTableMapper.selectList(resettlementPointTableQueryWrapper);
         for (int i = 0; i < resettlementPointTables.size(); i++) {
             ResettlementPointTable resettlementPointTable = resettlementPointTables.get(i);
             ResettlementPointTableVo resettlementPointTableVo = new ResettlementPointTableVo();
-            BeanUtils.copyProperties(resettlementPointTable,resettlementPointTableVo);
+            BeanUtils.copyProperties(resettlementPointTable, resettlementPointTableVo);
             list.add(resettlementPointTableVo);
         }
         return list;
@@ -203,10 +217,10 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
 
     //查询乡镇所属安置点
     @Override
-    public List<ResettlementPointTable> selectRes(String towId){
+    public List<ResettlementPointTable> selectRes(String towId) {
 
-        QueryWrapper<ResettlementPointTable> resettlementPointTableQueryWrapper=new QueryWrapper<>();
-        resettlementPointTableQueryWrapper.eq("township_id",towId);
+        QueryWrapper<ResettlementPointTable> resettlementPointTableQueryWrapper = new QueryWrapper<>();
+        resettlementPointTableQueryWrapper.eq("township_id", towId);
         //拿到安置点集合
         List<ResettlementPointTable> resettlementPointTables = resettlementPointTableMapper.selectList(resettlementPointTableQueryWrapper);
         return resettlementPointTables;

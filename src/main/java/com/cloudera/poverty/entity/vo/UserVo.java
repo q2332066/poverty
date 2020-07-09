@@ -39,8 +39,6 @@ public class UserVo implements Serializable, AuthCachePrincipal {
     @ApiModelProperty(value = "逻辑删除 1（true）已删除， 0（false）未删除")
     private Boolean isDeleted;
 
-    private List<RoleVo> roleVoList;
-
     @Override
     public String getAuthCacheKey() {
         return null;

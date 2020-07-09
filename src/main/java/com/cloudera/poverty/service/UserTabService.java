@@ -22,4 +22,5 @@ public interface UserTabService  extends IService<UserTable> {
 
     IPage<UserTableVo> selectAllList(Long page, Long limit, UserQueryVo userQueryVo);
 
+    List<UserTableVo> findByRoleId(String roleId);
 }

@@ -5,29 +5,30 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cloudera.poverty.base.exception.PaException;
-import com.cloudera.poverty.common.result.R;
 import com.cloudera.poverty.common.result.ResultCodeEnum;
 import com.cloudera.poverty.common.utils.JwtInfo;
 import com.cloudera.poverty.common.utils.JwtUtils;
-import com.cloudera.poverty.entity.admin.*;
-import com.cloudera.poverty.entity.region.ResettlementPointTable;
-import com.cloudera.poverty.entity.region.TownshipTable;
-import com.cloudera.poverty.entity.vo.*;
-import com.cloudera.poverty.mapper.*;
+import com.cloudera.poverty.entity.admin.UserRole;
+import com.cloudera.poverty.entity.admin.UserTable;
+import com.cloudera.poverty.entity.vo.LoginVo;
+import com.cloudera.poverty.entity.vo.UserQueryVo;
+import com.cloudera.poverty.entity.vo.UserTableVo;
+import com.cloudera.poverty.entity.vo.UserVo;
+import com.cloudera.poverty.mapper.DistrictTableMapper;
+import com.cloudera.poverty.mapper.ResettlementPointTableMapper;
+import com.cloudera.poverty.mapper.TownshipTableMapper;
+import com.cloudera.poverty.mapper.UserTabMapper;
+import com.cloudera.poverty.service.IUserRoleService;
 import com.cloudera.poverty.service.UserTabService;
 import org.apache.shiro.crypto.hash.Md5Hash;
-import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import com.cloudera.poverty.common.utils.MD5;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> implements UserTabService {
@@ -38,16 +39,18 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
     private TownshipTableMapper townshipTableMapper;
     @Autowired
     private ResettlementPointTableMapper resettlementPointTableMapper;
-    @Autowired
-    private UserRoleMapper userRoleMapper;
+//    @Autowired
+//    private UserRoleMapper userRoleMapper;
     @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
-    private RoleMapper roleMapper;
-    @Autowired
-    private RoleAuthorityMapper roleAuthorityMapper;
-    @Autowired
-    private AuthorityMapper authorityMapper;
+    IUserRoleService userRoleService;
+//    @Autowired
+//    private RoleMapper roleMapper;
+//    @Autowired
+//    private RoleAuthorityMapper roleAuthorityMapper;
+//    @Autowired
+//    private AuthorityMapper authorityMapper;
 
     @Override
     public String saveUser(UserTableVo userTable) {
@@ -67,12 +70,13 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
             user.setCreateTime(dateTime);
             int insert = baseMapper.insert(user);
             List<String> roleId = userTable.getRoleId();
+
             for (int i = 0; i < roleId.size(); i++) {
                 String s =  roleId.get(i);
-                UserRoleRelationshipTable userRoleRelationshipTable = new UserRoleRelationshipTable();
+                UserRole userRoleRelationshipTable = new UserRole();
                 userRoleRelationshipTable.setUserId(user.getUId());
                 userRoleRelationshipTable.setRoleId(s);
-                userRoleMapper.insert(userRoleRelationshipTable);
+                userRoleService.save(userRoleRelationshipTable);
             }
         }else{
             return "用户已被注册";
@@ -132,35 +136,17 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         if(userTable.getIsDeleted()){
             throw new PaException(ResultCodeEnum.LOGIN_DISABLED_ERROR);
         }
-        QueryWrapper<UserRoleRelationshipTable> wrapper=new QueryWrapper<>();
-        wrapper.eq("user_id",userTable.getUId());
-        List<UserRoleRelationshipTable> userRoleRelationshipTables = userRoleMapper.selectList(wrapper);
-        List<String> roleTablesList=new ArrayList<>();
-        List<String> authorityTableList=new ArrayList<>();
-        for (int i = 0; i < userRoleRelationshipTables.size(); i++) {
-            String roleId = userRoleRelationshipTables.get(i).getRoleId();
-            RoleTable roleTable = roleMapper.selectById(roleId);
-            roleTablesList.add(roleTable.getRoleName());
-            QueryWrapper<RolePermissionRelationshipTable> wrapperAuth=new QueryWrapper<>();
-            wrapperAuth.eq("role_id",roleId);
-            List<RolePermissionRelationshipTable> rolePermissionRelationshipTables = roleAuthorityMapper.selectList(wrapperAuth);
-            for (int j = 0; j < rolePermissionRelationshipTables.size(); j++) {
-                String authorityId = rolePermissionRelationshipTables.get(j).getAuthorityId();
-                AuthorityTable authorityTable = authorityMapper.selectById(authorityId);
-                if (null!=authorityTable){
-                    if (null!=authorityTable.getCode()||authorityTable.getCode().equals("")){
-                        authorityTableList.add(authorityTable.getCode());
-                    }
-                }
-            }
-        }
+
         JwtInfo jwtInfo = new JwtInfo();
         jwtInfo.setUId(userTable.getUId());
         jwtInfo.setShowName(userTable.getShowName());
         jwtInfo.setRegional(userTable.getRegionalId());
         jwtInfo.setLevel(userTable.getLevel());
-        jwtInfo.setRoleTables(roleTablesList);
-        jwtInfo.setAuthorityTables(authorityTableList);
+        jwtInfo.setDid(userTable.getDid());
+        jwtInfo.setTid(userTable.getTid());
+        jwtInfo.setRid(userTable.getRid());
+//        jwtInfo.setRoleTables(roleTablesList);
+//        jwtInfo.setAuthorityTables(authorityTableList);
         String jwtToken = JwtUtils.getJwtToken(jwtInfo, 7200);
         return jwtToken;
     }
@@ -172,32 +158,6 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         wrapper.eq("user_name",username);
         UserTable userTable = baseMapper.selectOne(wrapper);
         BeanUtils.copyProperties(userTable,userVo);
-        QueryWrapper<UserRoleRelationshipTable> wrapperRole=new QueryWrapper();
-        wrapperRole.eq("user_id",userTable.getUId());
-        List<UserRoleRelationshipTable> userRoleRelationshipTables = userRoleMapper.selectList(wrapperRole);
-
-        List<RoleVo> roleVoList=new ArrayList<>();
-
-        for (int i = 0; i < userRoleRelationshipTables.size(); i++) {
-            UserRoleRelationshipTable userRoleRelationshipTable = userRoleRelationshipTables.get(i);
-            RoleTable roleTable = roleMapper.selectById(userRoleRelationshipTable.getRoleId());
-            RoleVo roleVo = new RoleVo();
-            BeanUtils.copyProperties(roleTable,roleVo);
-            QueryWrapper<RolePermissionRelationshipTable> wrapperAuth=new QueryWrapper<>();
-            wrapperAuth.eq("role_id",roleTable.getRId());
-            List<RolePermissionRelationshipTable> rolePermissionRelationshipTables = roleAuthorityMapper.selectList(wrapperAuth);
-
-            List<AuthorityTable> authList=new ArrayList<>();
-
-            for (int j = 0; j < rolePermissionRelationshipTables.size(); j++) {
-                RolePermissionRelationshipTable rolePermissionRelationshipTable = rolePermissionRelationshipTables.get(j);
-                AuthorityTable authorityTable = authorityMapper.selectById(rolePermissionRelationshipTable.getId());
-                authList.add(authorityTable);
-            }
-            roleVo.setAuList(authList);
-            roleVoList.add(roleVo);
-        }
-        userVo.setRoleVoList(roleVoList);
         return userVo;
     }
 
@@ -206,29 +166,6 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         UserVo userVo = new UserVo();
         UserTable userTable = baseMapper.selectById(uId);
         BeanUtils.copyProperties(userTable,userVo);
-        QueryWrapper<UserRoleRelationshipTable> wrapperRole=new QueryWrapper();
-        wrapperRole.eq("user_id",userTable.getUId());
-        List<UserRoleRelationshipTable> userRoleRelationshipTables = userRoleMapper.selectList(wrapperRole);
-        List<RoleVo> roleVoList=new ArrayList<>();
-        for (int i = 0; i < userRoleRelationshipTables.size(); i++) {
-            String roleId = userRoleRelationshipTables.get(i).getRoleId();
-            RoleTable roleTable = roleMapper.selectById(roleId);
-            RoleVo roleVo = new RoleVo();
-            BeanUtils.copyProperties(roleTable,roleVo);
-
-            List<AuthorityTable> authList=new ArrayList<>();
-            QueryWrapper<RolePermissionRelationshipTable> wrapperAuth=new QueryWrapper<>();
-            wrapperAuth.eq("role_id",roleTable.getRId());
-            List<RolePermissionRelationshipTable> rolePermissionRelationshipTables = roleAuthorityMapper.selectList(wrapperAuth);
-            for (int j = 0; j < rolePermissionRelationshipTables.size(); j++) {
-                String authId = rolePermissionRelationshipTables.get(j).getAuthorityId();
-                AuthorityTable authorityTable = authorityMapper.selectById(authId);
-                authList.add(authorityTable);
-            }
-            roleVo.setAuList(authList);
-            roleVoList.add(roleVo);
-        }
-        userVo.setRoleVoList(roleVoList);
         return userVo;
     }
 
@@ -237,12 +174,21 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         QueryWrapper<UserTableVo> wrapper=new QueryWrapper<>();
         if (!StringUtils.isEmpty(userQueryVo.getResId())){
             System.out.println(userQueryVo.getResId()+"***************************************************");
-            wrapper.eq("P.regional_id",userQueryVo.getResId());
+            wrapper.eq("P.regional_id",userQueryVo.getCityId());
             if (!StringUtils.isEmpty(userQueryVo.getShowName())){
                 wrapper.eq("P.show_name",userQueryVo.getShowName());
             }
             if (!StringUtils.isEmpty(userQueryVo.getUserName())){
                 wrapper.eq("P.user_name",userQueryVo.getUserName());
+            }
+            if(!StringUtils.isEmpty(userQueryVo.getDisId())){
+                wrapper.eq("P.did",userQueryVo.getDisId());
+            }
+            if(!StringUtils.isEmpty(userQueryVo.getDisId())){
+                wrapper.eq("P.tid",userQueryVo.getTowId());
+            }
+            if(!StringUtils.isEmpty(userQueryVo.getDisId())){
+                wrapper.eq("P.rid",userQueryVo.getResId());
             }
             Page<UserTableVo> pageParam=new Page<>(page,limit);
             List<UserTableVo> records=baseMapper.selectAllList(pageParam,wrapper);
@@ -250,20 +196,18 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         }
 
         if (!StringUtils.isEmpty(userQueryVo.getTowId())){
-            String towId = userQueryVo.getTowId();
-            QueryWrapper<ResettlementPointTable> wrapperTow=new QueryWrapper<>();
-            wrapperTow.eq("township_id",userQueryVo.getTowId());
-            List<ResettlementPointTable> resettlementPointTables = resettlementPointTableMapper.selectList(wrapperTow);
-            for (int i = 0; i < resettlementPointTables.size(); i++) {
-                String rId = resettlementPointTables.get(i).getRId();
-                wrapper.eq("P.regional_id",rId).or();
-            }
-            wrapper.eq("P.regional_id",userQueryVo.getTowId());
+            wrapper.eq("P.regional_id",userQueryVo.getCityId());
             if (!StringUtils.isEmpty(userQueryVo.getShowName())){
                 wrapper.eq("P.show_name",userQueryVo.getShowName());
             }
             if (!StringUtils.isEmpty(userQueryVo.getUserName())){
                 wrapper.eq("P.user_name",userQueryVo.getUserName());
+            }
+            if(!StringUtils.isEmpty(userQueryVo.getDisId())){
+                wrapper.eq("P.did",userQueryVo.getDisId());
+            }
+            if(!StringUtils.isEmpty(userQueryVo.getDisId())){
+                wrapper.eq("P.tid",userQueryVo.getTowId());
             }
             Page<UserTableVo> pageParam=new Page<>(page,limit);
             List<UserTableVo> records=baseMapper.selectAllList(pageParam,wrapper);
@@ -273,21 +217,7 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
 
 
         if (!StringUtils.isEmpty(userQueryVo.getDisId())){
-            QueryWrapper<TownshipTable> wrapperDis=new QueryWrapper<>();
-            wrapperDis.eq("district_id",userQueryVo.getDisId());
-            List<TownshipTable> townshipTables = townshipTableMapper.selectList(wrapperDis);
-            for (int i = 0; i < townshipTables.size(); i++) {
-                String tId = townshipTables.get(i).getTId();
-                wrapper.eq("P.regional_id",tId).or();
-                QueryWrapper<ResettlementPointTable> wrapperRes=new QueryWrapper<>();
-                wrapperRes.eq("township_id",tId);
-                List<ResettlementPointTable> resettlementPointTables = resettlementPointTableMapper.selectList(wrapperRes);
-                for (int j = 0; j < resettlementPointTables.size(); j++) {
-                    String rId = resettlementPointTables.get(j).getRId();
-                    wrapper.eq("P.regional_id",rId).or();
-                }
-            }
-            wrapper.eq("P.regional_id",userQueryVo.getDisId());
+            wrapper.eq("P.regional_id",userQueryVo.getCityId());
             if (!StringUtils.isEmpty(userQueryVo.getShowName())){
                 wrapper.eq("P.show_name",userQueryVo.getShowName());
             }
@@ -300,7 +230,7 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         }
 
 
-        if (!StringUtils.isEmpty(userQueryVo.getCityId())){
+//        if (!StringUtils.isEmpty(userQueryVo.getCityId())){
             if (!StringUtils.isEmpty(userQueryVo.getShowName())){
                 wrapper.eq("P.show_name",userQueryVo.getShowName());
             }
@@ -310,7 +240,12 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
             Page<UserTableVo> pageParam=new Page<>(page,limit);
             List<UserTableVo> records=baseMapper.selectAllList(pageParam,wrapper);
             return pageParam.setRecords(records);
-        }
-        return null;
+//        }
+//        return null;
+    }
+
+    @Override
+    public List<UserTableVo> findByRoleId(String roleId) {
+        return this.baseMapper.findByRoleId(roleId);
     }
 }

@@ -1,7 +1,6 @@
 package com.cloudera.poverty.entity.vo;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.cloudera.poverty.entity.admin.RoleTable;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -34,12 +33,18 @@ public class UserTableVo {
     private String showName;
     @ApiModelProperty(value = "地域ID")
     private String regionalId;
+    @ApiModelProperty(value = "区ID")
+    private String did;
+    @ApiModelProperty(value = "镇ID")
+    private String tid;
+    @ApiModelProperty(value = "安置点ID")
+    private String rid;
     @ApiModelProperty(value = "账号级别")
     private String level;
     @ApiModelProperty(value = "逻辑删除 1（true）已删除， 0（false）未删除")
     private Boolean isDeleted;
     private String resName;
-    private List<RoleTable> roleTable=new ArrayList<>();
+    private String orgPwd;
     private List<String> roleId=new ArrayList<>();
 
     @TableId(value = "ci_id", type = IdType.ASSIGN_ID)

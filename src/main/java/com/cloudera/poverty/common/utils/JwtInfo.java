@@ -1,7 +1,5 @@
 package com.cloudera.poverty.common.utils;
 
-import com.cloudera.poverty.entity.admin.AuthorityTable;
-import com.cloudera.poverty.entity.admin.RoleTable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +18,9 @@ public class JwtInfo {
     private String uId;
     private String showName;
     private String regional;
+    private String did;
+    private String tid;
+    private String rid;
     private String level;
     private List<String> roleTables=new ArrayList<>();
     private List<String> authorityTables=new ArrayList<>();

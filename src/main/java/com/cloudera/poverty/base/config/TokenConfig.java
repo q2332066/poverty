@@ -14,8 +14,10 @@ public class TokenConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/min/est/user/login").excludePathPatterns("/region/**")
-                ;//不拦截,"min/est/Authority/selectAuthority"
+                .excludePathPatterns("/min/est/user/login",
+                        "/region/**",
+                        "/min/est/user/get-login-info",
+                        "/min/est/roleauthority/selectAuth");//不拦截
     }
 
 //    @Override

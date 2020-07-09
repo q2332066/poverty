@@ -1,19 +1,19 @@
-package com.cloudera.poverty.mapper;
+package com.cloudera.poverty.service;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloudera.poverty.entity.admin.Role;
 
 import java.io.Serializable;
 
 /**
  * <p>
- *  Mapper 接口
+ *  服务类
  * </p>
  *
  * @author fengtoos
  * @since 2020-04-07
  */
-public interface RoleMapper extends BaseMapper<Role> {
+public interface IRoleService extends IService<Role> {
 
     /**
      * 根据ID获取实体

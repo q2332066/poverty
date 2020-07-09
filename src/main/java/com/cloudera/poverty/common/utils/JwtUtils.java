@@ -42,6 +42,9 @@ public class JwtUtils {
                 .claim("level",jwtInfo.getLevel())//账号等级
                 .claim("roles",jwtInfo.getRoleTables())
                 .claim("auths",jwtInfo.getAuthorityTables())
+                .claim("did",jwtInfo.getDid())
+                .claim("tid",jwtInfo.getTid())
+                .claim("rid",jwtInfo.getRid())
                 .signWith(SignatureAlgorithm.HS256, getKeyInstance())
                 .compact();
 

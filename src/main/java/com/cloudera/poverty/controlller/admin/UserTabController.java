@@ -6,22 +6,19 @@ import com.cloudera.poverty.base.exception.PaException;
 import com.cloudera.poverty.common.result.Lay;
 import com.cloudera.poverty.common.result.R;
 import com.cloudera.poverty.common.result.ResultCodeEnum;
-import com.cloudera.poverty.common.utils.JwtInfo;
 import com.cloudera.poverty.common.utils.JwtUtils;
-import com.cloudera.poverty.entity.admin.RoleTable;
+import com.cloudera.poverty.entity.admin.UserRole;
 import com.cloudera.poverty.entity.admin.UserTable;
 import com.cloudera.poverty.entity.vo.*;
-import com.cloudera.poverty.service.UserRoleService;
+import com.cloudera.poverty.service.IUserRoleService;
 import com.cloudera.poverty.service.UserTabService;
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,9 +38,8 @@ public class UserTabController {
 
     @Autowired
     private UserTabService userTabService;
-
     @Autowired
-    private UserRoleService userRoleService;
+    IUserRoleService userRoleService;
 
     /**
      * 添加账号
@@ -148,22 +144,40 @@ public class UserTabController {
 
 
 
+
     @ApiOperation("修改账号")
     @RequestMapping(value = "updateuser",method = RequestMethod.POST,name = "API-SELECT")
     public Lay updateUser(
-            @RequestBody UserTable userTable){
+            @RequestBody UserTableVo userTable){
         String username = userTable.getUserName();
         String password = userTable.getPassword();
         String orgPassword = userTable.getOrgPwd();
         QueryWrapper<UserTable> wrapper=new QueryWrapper<>();
         wrapper.eq("user_name",username);
         UserTable userTable1 = userTabService.getOne(wrapper);
-        if(!new Md5Hash(orgPassword, username, 3).toString().equals(userTable1.getPassword())){
-            return Lay.error().msg("请输入正确的原始密码");
-        }
+        if(StringUtils.isNotEmpty(orgPassword)){
+            if(!new Md5Hash(orgPassword, username, 3).toString().equals(userTable1.getPassword())){
+                return Lay.error().msg("请输入正确的原始密码");
+            }
+            password = new Md5Hash(password, username, 3).toString();
+            userTable1.setPassword(password);
+        } else {
+            List<String> roleId = userTable.getRoleId();
 
-        password = new Md5Hash(password, username, 3).toString();
-        userTable1.setPassword(password);
+            for (int i = 0; i < roleId.size(); i++) {
+                String s =  roleId.get(i);
+                QueryWrapper<UserRole> q = new QueryWrapper<>();
+                q.eq("user_id", userTable1.getUId());
+                q.eq("role_id", s);
+                if(userRoleService.count(q) == 0){
+                    UserRole userRoleRelationshipTable = new UserRole();
+                    userRoleRelationshipTable.setUserId(userTable1.getUId());
+                    userRoleRelationshipTable.setRoleId(s);
+                    userRoleService.save(userRoleRelationshipTable);
+                }
+
+            }
+        }
         userTabService.updateById(userTable1);
         return Lay.ok().msg("修改成功");
     }
@@ -179,11 +193,15 @@ public class UserTabController {
         List<UserTableVo> list=new ArrayList<>();
         for (int i = 0; i < records.size(); i++) {
             UserTableVo userTableVo = records.get(i);
-            String uId = userTableVo.getUId();
-            List<RoleTable> roleTables = userRoleService.selectRole(uId);
-            userTableVo.setRoleTable(roleTables);
+            userTableVo.setRoleId(this.userRoleService.selectIdsByUid(userTableVo.getUId()));
             list.add(userTableVo);
         }
         return Lay.ok().count(total).data(list);
+    }
+
+    @ApiOperation("按照角色查询用户")
+    @GetMapping("/role/{id}")
+    public Lay findByRoleId(@PathVariable String id){
+        return Lay.ok().data(this.userTabService.findByRoleId(id));
     }
 }

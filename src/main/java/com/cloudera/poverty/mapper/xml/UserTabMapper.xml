@@ -53,5 +53,9 @@
         city Ci
         on D.city_id=Ci.ci_id
         ${ew.customSqlSegment}
+        order by P.`level` asc
+    </select>
+    <select id="findByRoleId" resultType="com.cloudera.poverty.entity.vo.UserTableVo">
+        SELECT * FROM user_table  P WHERE EXISTS ( SELECT 1 FROM user_role r WHERE r.user_id = P.u_id AND role_id = #{roleId})
     </select>
 </mapper>

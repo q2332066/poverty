@@ -45,8 +45,17 @@ public class UserTable implements Serializable {
     @ApiModelProperty(value = "显示名称")
     private String showName;
 
-    @ApiModelProperty(value = "地域ID")
+    @ApiModelProperty(value = "市ID")
     private String regionalId;
+
+    @ApiModelProperty(value = "区ID")
+    private String did;
+
+    @ApiModelProperty(value = "镇ID")
+    private String tid;
+
+    @ApiModelProperty(value = "安置点ID")
+    private String rid;
 
     @ApiModelProperty(value = "账号级别")
     private String level;

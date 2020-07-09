@@ -54,10 +54,16 @@ public class CityController {
         String showname = (String) claims.get("showname");
         String regional = (String) claims.get("regional");
         String level = (String) claims.get("level");
+        String did = (String) claims.get("did");
+        String tid = (String) claims.get("tid");
+        String rid = (String) claims.get("rid");
         UserTable userTable = new UserTable();
         userTable.setUId(uid);
         userTable.setShowName(showname);
         userTable.setRegionalId(regional);
+        userTable.setDid(did);
+        userTable.setTid(tid);
+        userTable.setRid(rid);
         userTable.setLevel(level);
 
         List<CityVo> items=cityService.nestList(userTable);

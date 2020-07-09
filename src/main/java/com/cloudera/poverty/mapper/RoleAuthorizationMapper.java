@@ -1,7 +1,7 @@
 package com.cloudera.poverty.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.cloudera.poverty.entity.admin.UserRole;
+import com.cloudera.poverty.entity.admin.RoleAuthorization;
 
 /**
  * <p>
@@ -11,6 +11,6 @@ import com.cloudera.poverty.entity.admin.UserRole;
  * @author fengtoos
  * @since 2020-04-08
  */
-public interface UserRoleMapper extends BaseMapper<UserRole> {
+public interface RoleAuthorizationMapper extends BaseMapper<RoleAuthorization> {
 
 }
