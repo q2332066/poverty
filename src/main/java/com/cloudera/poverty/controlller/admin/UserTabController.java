@@ -154,10 +154,11 @@ public class UserTabController {
     public Lay updateUser(
             @RequestBody UserTableVo userTable){
         String username = userTable.getUserName();
+        String uid = userTable.getUId();
         String password = userTable.getPassword();
         String orgPassword = userTable.getOrgPwd();
         QueryWrapper<UserTable> wrapper=new QueryWrapper<>();
-        wrapper.eq("user_name",username);
+        wrapper.eq("u_id", uid);
         UserTable userTable1 = userTabService.getOne(wrapper);
         if(StringUtils.isNotEmpty(orgPassword)){
             if(!new Md5Hash(orgPassword, username, 3).toString().equals(userTable1.getPassword())){
@@ -182,6 +183,7 @@ public class UserTabController {
 
             }
         }
+        userTable1.setUserName(username);
         userTabService.updateById(userTable1);
         return Lay.ok().msg("修改成功");
     }
