@@ -192,8 +192,12 @@ public class UserTabController {
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);
 
         userQueryVo.setCityId((String) claims.get("regional"));
-        userQueryVo.setDisId((String) claims.get("did"));
-        userQueryVo.setTowId((String) claims.get("tid"));
+        if(StringUtils.isEmpty(userQueryVo.getDisId())) {
+            userQueryVo.setDisId((String) claims.get("did"));
+        }
+        if(StringUtils.isEmpty(userQueryVo.getTowId())) {
+            userQueryVo.setTowId((String) claims.get("tid"));
+        }
         if(StringUtils.isEmpty(userQueryVo.getResId())){
             userQueryVo.setResId((String) claims.get("rid"));
         }
