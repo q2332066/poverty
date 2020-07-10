@@ -188,8 +188,6 @@ public class PersonnelInformationTableController {
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);
         String regionalId = (String) claims.get("regional");
         String level = (String) claims.get("level");
-//        String level="2";
-//        String regionalId="13";
         if(level.equals("2")){
             regionalId = (String) claims.get("did");
         } else if(level.equals("3")) {
