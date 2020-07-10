@@ -22,7 +22,7 @@ public class R {
     private Integer code;
 
     @ApiModelProperty(value = "返回消息")
-    private String message;
+    private String msg;
 
     @ApiModelProperty(value = "返回数据")
     private Map<String, Object> data = new HashMap<String, Object>();
@@ -33,7 +33,7 @@ public class R {
         R r = new R();
         r.setSuccess(ResultCodeEnum.SUCCESS.getSuccess());
         r.setCode(ResultCodeEnum.SUCCESS.getCode());
-        r.setMessage(ResultCodeEnum.SUCCESS.getMessage());
+        r.setMsg(ResultCodeEnum.SUCCESS.getMessage());
         return r;
     }
 
@@ -41,7 +41,7 @@ public class R {
         R r = new R();
         r.setSuccess(ResultCodeEnum.UNKNOWN_REASON.getSuccess());
         r.setCode(ResultCodeEnum.UNKNOWN_REASON.getCode());
-        r.setMessage(ResultCodeEnum.UNKNOWN_REASON.getMessage());
+        r.setMsg(ResultCodeEnum.UNKNOWN_REASON.getMessage());
         return r;
     }
 
@@ -49,7 +49,7 @@ public class R {
         R r = new R();
         r.setSuccess(resultCodeEnum.getSuccess());
         r.setCode(resultCodeEnum.getCode());
-        r.setMessage(resultCodeEnum.getMessage());
+        r.setMsg(resultCodeEnum.getMessage());
         return r;
     }
 
@@ -59,7 +59,7 @@ public class R {
     }
 
     public R message(String message){
-        this.setMessage(message);
+        this.setMsg(message);
         return this;
     }
 
