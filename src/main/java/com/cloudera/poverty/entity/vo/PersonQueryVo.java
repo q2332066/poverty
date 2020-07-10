@@ -20,4 +20,10 @@ public class PersonQueryVo {
     private Long page;
     private Long limit;
     private Integer type;
+    private String uid;
+    private String level;
+    private String regional;
+    private String did;
+    private String tid;
+    private String rid;
 }

@@ -38,10 +38,20 @@ public class ExcelExportController {
         personQueryVo.setPage(1L);
         personQueryVo.setLimit(10000L);
 //        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
-//        String regionalId = (String) claims.get("regional");
-//        String level = (String) claims.get("level");
+        String regionalId = personQueryVo.getRegional();
+        String level = personQueryVo.getLevel();
+
+        if("2".equals(level)){
+            regionalId = personQueryVo.getDid();
+        } else if("3".equals(level)) {
+            regionalId = personQueryVo.getTid();
+        } else if("4".equals(level)) {
+            regionalId = personQueryVo.getRid();
+        }
+
         Integer type = personQueryVo.getType();
-        List<PersonAllVo> records = personnelInformationService.findAllExcel(personQueryVo,"0","1").getRecords();
+        List<PersonAllVo> records = personnelInformationService.findAllExcel(personQueryVo,level,regionalId).getRecords();
+//        String p = ClassUtils.getDefaultClassLoader().getResource("templates").getPath();
 //        String path = this.getClass().getClassLoader().getResource("templates").getPath();
 //        String path = new ClassPathResource("templates/").getPath();
 //        System.out.println(path);

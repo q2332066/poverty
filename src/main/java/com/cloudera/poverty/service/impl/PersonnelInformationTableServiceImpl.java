@@ -408,7 +408,7 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         if (!StringUtils.isEmpty(personQueryVo.getHost())){ //户主姓名
             wrapper.eq("P.host",personQueryVo.getHost());
         }
-        if (!StringUtils.isEmpty(personQueryVo.getResettlementPointId())){ //安置点id
+        if (!StringUtils.isEmpty(personQueryVo.getResettlementPointId()) && !"null".equals(personQueryVo.getResettlementPointId())){ //安置点id
             wrapper.eq("P.resettlement_point_id",personQueryVo.getResettlementPointId());
         }
         if (!StringUtils.isEmpty(personQueryVo.getArrangement())){  //安置方式
