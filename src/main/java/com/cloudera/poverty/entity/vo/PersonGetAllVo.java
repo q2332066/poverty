@@ -18,6 +18,8 @@ public class PersonGetAllVo {
     @TableId(value = "p_id")
     private String pId;
 
+    private String pid;
+
     @ApiModelProperty(value = "户主")
     private String host;
 

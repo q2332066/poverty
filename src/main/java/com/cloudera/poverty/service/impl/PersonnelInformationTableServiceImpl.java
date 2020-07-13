@@ -285,10 +285,13 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         PersonnelInformationTable personnelInformationTable = new PersonnelInformationTable();
         BeanUtils.copyProperties(personGetAllVo,personnelInformationTable);
         String pId = personGetAllVo.getPId();
+//        if(org.apache.commons.lang3.StringUtils.isEmpty(pId)){
+//            pId = personGetAllVo.getPid();
+//        }
         baseMapper.updateById(personnelInformationTable);
 
         QueryWrapper wrapper=new QueryWrapper();
-        wrapper.eq("personnel_infomation_id",pId);
+        wrapper.eq("personnel_information_id",pId);
 
         IndustrialPolicyTable industrialPolicyTable=new IndustrialPolicyTable();
         industrialPolicyTable.setPersonnelInformationId(pId);
