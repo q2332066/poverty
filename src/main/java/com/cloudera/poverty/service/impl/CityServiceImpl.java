@@ -174,25 +174,25 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         String dId = cityReVo.getDId();
         String ciId = cityReVo.getCiId();
         String name = cityReVo.getName();
-        if (StringUtils.isEmpty(rId)) {
+        if (!StringUtils.isEmpty(ciId)) {
+            DistrictTable districtTable = new DistrictTable();
+            districtTable.setCityId(ciId);
+            districtTable.setDistrict(name);
+            districtTableMapper.insert(districtTable);
+            return;
+        }
+        if (StringUtils.isEmpty(rId)&&!StringUtils.isEmpty(tId)) {
             ResettlementPointTable resettlementPointTable = new ResettlementPointTable();
             resettlementPointTable.setTownshipId(tId);
             resettlementPointTable.setResettlementPoint(name);
             resettlementPointTableMapper.insert(resettlementPointTable);
             return;
         }
-        if (StringUtils.isEmpty(tId)) {
+        if (StringUtils.isEmpty(tId)&&!StringUtils.isEmpty(dId)) {
             TownshipTable townshipTable = new TownshipTable();
-            townshipTable.setDistrictId(tId);
+            townshipTable.setDistrictId(dId);
             townshipTable.setTownship(name);
             townshipTableMapper.insert(townshipTable);
-            return;
-        }
-        if (StringUtils.isEmpty(dId)) {
-            DistrictTable districtTable = new DistrictTable();
-            districtTable.setCityId(ciId);
-            districtTable.setDistrict(name);
-            districtTableMapper.insert(districtTable);
             return;
         }
     }

@@ -14,7 +14,7 @@ import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -83,7 +83,10 @@ public class CityController {
     }
     @ApiOperation("地域添加")
     @RequestMapping(value = "save",method = RequestMethod.POST,name = "API-DEPT")
-    public Lay saveList(@RequestParam(required = false) String ciId,@RequestParam(required = false) String dId,@RequestParam(required = false) String tId,@RequestParam(required = false) String name){
+    public Lay saveList(@RequestParam(required = false) String ciId,
+                        @RequestParam(required = false) String dId,
+                        @RequestParam(required = false) String tId,
+                        @RequestParam(required = false) String name){
        CityReVo cityReVo=new CityReVo();
        if(ciId!=null){
            cityReVo.setCiId(ciId);
@@ -102,16 +105,17 @@ public class CityController {
     }
     @ApiOperation("地域删除,所有id要不相同")
     @RequestMapping(value = "delete",method = RequestMethod.POST,name = "API-DEPT")
-    public Lay deleteList(String id){
-        boolean b3 = resettlementPointTableService.removeById(id);
-        if (b3){return Lay.ok().msg("成功");}
-        boolean b2 = townshipTableService.removeById(id);
-        if (b2){return Lay.ok().msg("成功");}
-        boolean b1 = districtTableService.removeById(id);
-        if (b1){return Lay.ok().msg("成功");}
-        boolean b = cityService.removeById(id);
-        if (b){return Lay.ok().msg("成功");}
-        return Lay.error().msg("失败");
+    public Lay deleteList(@RequestParam(required = false) String rId, @RequestParam(required = false) String dId,
+                          @RequestParam(required = false) String tId){
+
+        if(StringUtils.isNotBlank(rId)){
+            resettlementPointTableService.removeById(rId);
+        } else if(StringUtils.isNotBlank(dId)){
+            districtTableService.removeById(dId);
+        } else if(StringUtils.isNotBlank(tId)){
+            townshipTableService.removeById(tId);
+        }
+        return Lay.ok().msg("删除成功");
     }
 }
 
