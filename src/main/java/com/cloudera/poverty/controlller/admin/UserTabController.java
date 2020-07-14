@@ -55,7 +55,7 @@ public class UserTabController {
     public Lay saveUser(
             @RequestBody UserTableVo userTable){
         String username = userTable.getUserName();
-        String password = userTable.getPassword();
+        String password = "000000";
         password = new Md5Hash(password, username, 3).toString();
         userTable.setPassword(password);
         String msg=userTabService.saveUser(userTable);
