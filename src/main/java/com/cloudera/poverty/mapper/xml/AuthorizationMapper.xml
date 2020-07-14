@@ -35,7 +35,7 @@
             <result column="icon" property="icon" />
             <result column="parentName" property="parentName" />
             <result column="iframe" property="iframe" />
-            <collection property="children" select="selectTreeByParent" column="id" />
+            <collection property="children" select="selectTreeByParentAll" column="id" />
         </resultMap>
     
         <!-- 通用查询结果列 -->
@@ -85,6 +85,16 @@
         </select>
 
         <select id="selectTreeByParent" resultMap="BaseResultMap">
+            SELECT
+            <include refid="Base_Column_List"/>,
+            e.name parentName
+            FROM authorization a
+            LEFT JOIN authorization e on e.id = a.parent
+            WHERE a.parent = #{parent}
+            <include refid="Base_OrderBy" />
+        </select>
+
+        <select id="selectTreeByParentAll" resultMap="BaseTreeResultMap">
             SELECT
             <include refid="Base_Column_List"/>,
             e.name parentName

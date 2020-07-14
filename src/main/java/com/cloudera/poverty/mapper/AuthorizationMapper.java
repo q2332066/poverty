@@ -43,6 +43,12 @@ public interface AuthorizationMapper extends BaseMapper<Authorization> {
     List<Authorization> selectAllTree();
 
     /**
+     * 递归根据父ID查询树
+     * @return
+     */
+    List<Authorization> selectTreeByParentAll(String parent);
+
+    /**
      * 根据角色ID获取权限
      * @param roleId
      * @return
