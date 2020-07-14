@@ -157,7 +157,12 @@ public class UserTabController {
         String password = userTable.getPassword();
         String orgPassword = userTable.getOrgPwd();
         QueryWrapper<UserTable> wrapper=new QueryWrapper<>();
-        wrapper.eq("u_id", uid);
+        if(StringUtils.isNotEmpty(uid)){
+            wrapper.eq("u_id", uid);
+        }
+        if(StringUtils.isNotEmpty(username)){
+            wrapper.eq("user_name", username);
+        }
         UserTable userTable1 = userTabService.getOne(wrapper);
         if(StringUtils.isNotEmpty(orgPassword)){
             if(!new Md5Hash(orgPassword, username, 3).toString().equals(userTable1.getPassword())){
