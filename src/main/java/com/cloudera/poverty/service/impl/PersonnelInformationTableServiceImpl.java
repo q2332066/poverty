@@ -353,7 +353,7 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
             wrapper.like("P.name",personQueryVo.getName());
         }
         if (!StringUtils.isEmpty(personQueryVo.getHost())){ //户主姓名
-            wrapper.eq("P.host",personQueryVo.getHost());
+            wrapper.like("P.host",personQueryVo.getHost());
         }
         if (!StringUtils.isEmpty(personQueryVo.getResettlementPointId())){ //安置点id
             wrapper.eq("P.resettlement_point_id",personQueryVo.getResettlementPointId());
@@ -393,13 +393,13 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         if (level.equals("4")){
             wrapper.eq("P.resettlement_point_id", regionalId);
         }
-        if (!StringUtils.isEmpty(personQueryVo.getDisId())){
+        if (!StringUtils.isEmpty(personQueryVo.getDisId()) && !"null".equals(personQueryVo.getDisId())){
             wrapper.eq("D.d_id",personQueryVo.getDisId());
         }
-        if (!StringUtils.isEmpty(personQueryVo.getTowId())){
+        if (!StringUtils.isEmpty(personQueryVo.getTowId()) && !"null".equals(personQueryVo.getTowId())){
             wrapper.eq("T.t_id",personQueryVo.getTowId());
         }
-        if (!StringUtils.isEmpty(personQueryVo.getResId())){
+        if (!StringUtils.isEmpty(personQueryVo.getResId()) && !"null".equals(personQueryVo.getResId())){
             wrapper.eq("P.resettlement_point_id",personQueryVo.getResId());
         }
         if (!StringUtils.isEmpty(personQueryVo.getPerId())){

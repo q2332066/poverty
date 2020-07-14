@@ -71,7 +71,7 @@ public class PersonAllVoServiceImpl extends ServiceImpl<PersonAllVoMapper, Perso
             careerPolicyTableMapper.delete(wrapperCareer);
 
             QueryWrapper<EnjoyHelpPolicyTable> wrapperEnjoy=new QueryWrapper<>();
-            wrapperCareer.eq("personnel_information_id",id);
+            wrapperEnjoy.eq("personnel_information_id",id);
             enjoyHelpPolicyTableMapper.delete(wrapperEnjoy);
 
             personnelInformationTableMapper.deleteById(id);

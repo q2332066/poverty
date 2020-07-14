@@ -126,11 +126,17 @@ public class UserTabController {
             String showname = (String) claims.get("showname");
             String regional = (String) claims.get("regional");
             String level = (String) claims.get("level");
+            String did = (String) claims.get("did");
+            String tid = (String) claims.get("tid");
+            String rid = (String) claims.get("rid");
             UserTable userTable = new UserTable();
             userTable.setUId(uid);
             userTable.setShowName(showname);
             userTable.setRegionalId(regional);
             userTable.setLevel(level);
+            userTable.setDid(did);
+            userTable.setTid(tid);
+            userTable.setRid(rid);
             return R.ok().data("userInfo", userTable);
 //        }catch (Exception e){
 //            log.error("解析用户信息失败，" + e.getMessage());
@@ -188,6 +194,7 @@ public class UserTabController {
             }
         }
         userTable1.setUserName(username);
+        userTable1.setLevel(userTable.getLevel());
         userTabService.updateById(userTable1);
         return Lay.ok().msg("修改成功");
     }
