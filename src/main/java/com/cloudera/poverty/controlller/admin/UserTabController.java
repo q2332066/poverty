@@ -120,7 +120,7 @@ public class UserTabController {
     @ApiOperation(value = "根据token获取登录信息")
     @RequestMapping(value = "get-login-info",method = RequestMethod.GET,name = "API-SELECT")
     public R getLoginInfo(HttpServletRequest request){
-        try{
+//        try{
             Claims claims = JwtUtils.getMemberIdByJwtToken(request);
             String uid = (String) claims.get("uid");
             String showname = (String) claims.get("showname");
@@ -132,11 +132,10 @@ public class UserTabController {
             userTable.setRegionalId(regional);
             userTable.setLevel(level);
             return R.ok().data("userInfo", userTable);
-
-        }catch (Exception e){
-            log.error("解析用户信息失败，" + e.getMessage());
-            throw new PaException(ResultCodeEnum.FETCH_USERINFO_ERROR);
-        }
+//        }catch (Exception e){
+//            log.error("解析用户信息失败，" + e.getMessage());
+//            throw new PaException(ResultCodeEnum.FETCH_USERINFO_ERROR);
+//        }
     }
 
     @ApiOperation("账号角色权限")
