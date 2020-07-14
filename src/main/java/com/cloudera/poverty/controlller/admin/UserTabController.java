@@ -179,21 +179,26 @@ public class UserTabController {
         } else {
             List<String> roleId = userTable.getRoleId();
 
+            //先执行删除
+            QueryWrapper<UserRole> q = new QueryWrapper<>();
+            q.eq("user_id", userTable1.getUId());
+            userRoleService.remove(q);
             for (int i = 0; i < roleId.size(); i++) {
                 String s =  roleId.get(i);
-                QueryWrapper<UserRole> q = new QueryWrapper<>();
+                q = new QueryWrapper<>();
                 q.eq("user_id", userTable1.getUId());
                 q.eq("role_id", s);
-                if(userRoleService.count(q) == 0){
-                    UserRole userRoleRelationshipTable = new UserRole();
-                    userRoleRelationshipTable.setUserId(userTable1.getUId());
-                    userRoleRelationshipTable.setRoleId(s);
-                    userRoleService.save(userRoleRelationshipTable);
-                }
+//                if(userRoleService.count(q) == 0){
+                UserRole userRoleRelationshipTable = new UserRole();
+                userRoleRelationshipTable.setUserId(userTable1.getUId());
+                userRoleRelationshipTable.setRoleId(s);
+                userRoleService.save(userRoleRelationshipTable);
+//                }
 
             }
         }
-        userTable1.setUserName(username);
+//        userTable1.setUserName(username);
+        userTable1.setShowName(userTable.getShowName());
         userTable1.setLevel(userTable.getLevel());
         userTabService.updateById(userTable1);
         return Lay.ok().msg("修改成功");
