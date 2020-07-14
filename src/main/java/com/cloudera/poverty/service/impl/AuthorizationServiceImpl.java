@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -36,13 +37,17 @@ public class AuthorizationServiceImpl extends ServiceImpl<AuthorizationMapper, A
     @Override
     public List<Authorization> findTree(String pid) {
         if("all".equals(pid)){
-            return this.authorizationMapper.selectAllTree();
+            List<Authorization> auths = this.authorizationMapper.selectAllTree();
+            auths.forEach(i -> i.setIsLeaf(false));
+            return auths;
         }
 
         if (StringUtils.isEmpty(pid)){
             return this.authorizationMapper.selectTree();
         } else {
-            return this.authorizationMapper.selectTreeByParent(pid);
+            List<Authorization> auths = this.authorizationMapper.selectTreeByParent(pid);
+            auths.forEach(i -> i.setIsLeaf(false));
+            return auths;
         }
     }
 

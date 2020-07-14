@@ -100,18 +100,18 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         String pId = personnelInformationTable.getPId();
 
         IndustrialPolicyTable industrialPolicyTable=new IndustrialPolicyTable();
-        industrialPolicyTable.setPersonnelInformationId(pId);
         BeanUtils.copyProperties(personGetAllVo,industrialPolicyTable);
+        industrialPolicyTable.setPersonnelInformationId(pId);
         industrialPolicyTableMapper.insert(industrialPolicyTable);
 
         CareerPolicyTable careerPolicyTable=new CareerPolicyTable();
-        careerPolicyTable.setPersonnelInformationId(pId);
         BeanUtils.copyProperties(personGetAllVo,careerPolicyTable);
+        careerPolicyTable.setPersonnelInformationId(pId);
         careerPolicyTableMapper.insert(careerPolicyTable);
 
         EnjoyHelpPolicyTable enjoyHelpPolicyTable=new EnjoyHelpPolicyTable();
-        enjoyHelpPolicyTable.setPersonnelInformationId(pId);
         BeanUtils.copyProperties(personGetAllVo,enjoyHelpPolicyTable);
+        enjoyHelpPolicyTable.setPersonnelInformationId(pId);
         enjoyHelpPolicyTableMapper.insert(enjoyHelpPolicyTable);
         return pId;
     }
