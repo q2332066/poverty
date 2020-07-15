@@ -17,6 +17,7 @@ import java.util.List;
 public class JwtInfo {
     private String uId;
     private String showName;
+    private String userName;
     private String regional;
     private String did;
     private String tid;

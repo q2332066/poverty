@@ -145,8 +145,7 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         jwtInfo.setDid(userTable.getDid());
         jwtInfo.setTid(userTable.getTid());
         jwtInfo.setRid(userTable.getRid());
-//        jwtInfo.setRoleTables(roleTablesList);
-//        jwtInfo.setAuthorityTables(authorityTableList);
+        jwtInfo.setUserName(userTable.getUserName());
         String jwtToken = JwtUtils.getJwtToken(jwtInfo, 14400);
         return jwtToken;
     }

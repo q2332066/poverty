@@ -45,6 +45,7 @@ public class JwtUtils {
                 .claim("did",jwtInfo.getDid())
                 .claim("tid",jwtInfo.getTid())
                 .claim("rid",jwtInfo.getRid())
+                .claim("username", jwtInfo.getUserName())
                 .signWith(SignatureAlgorithm.HS256, getKeyInstance())
                 .compact();
 
