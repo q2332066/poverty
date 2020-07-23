@@ -83,10 +83,11 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
                 BeanUtils.copyProperties(townshipTable, townshipVo);
                 //乡镇ID
                 String tableId = townshipTable.getTId();
-                List<ResettlementPointTable> resettlementPointTables = this.selectRes(tableId)
-                        .stream()
-                        .filter(item -> userTable.getRid() == null || item.getRId().equals(userTable.getRid()))
-                        .collect(Collectors.toList());
+                List<ResettlementPointTable> resettlementPointTables = this.selectRes(tableId).stream().filter(item -> {
+                    item.setId(item.getRId());
+                    item.setParentId(item.getTownshipId());
+                    return userTable.getRid() == null || item.getRId().equals(userTable.getRid());
+                }).collect(Collectors.toList());
                 //安置点进入当前乡镇
                 townshipVo.setChildren(resettlementPointTables);
                 //将乡镇放入区县对象乡镇集合

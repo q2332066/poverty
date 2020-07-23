@@ -20,15 +20,12 @@ public class JwtInfo {
     private String userName;
     private String regional;
     private String did;
+    private String dname;
     private String tid;
+    private String tname;
     private String rid;
+    private String rname;
     private String level;
     private List<String> roleTables=new ArrayList<>();
     private List<String> authorityTables=new ArrayList<>();
-
-    public JwtInfo(String uid, String showname, String auths, String roles, String regional, String level) {
-
-    }
-    //权限、角色等
-    //不要存敏感信息
 }

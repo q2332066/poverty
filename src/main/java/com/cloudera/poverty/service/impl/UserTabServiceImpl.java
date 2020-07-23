@@ -10,6 +10,9 @@ import com.cloudera.poverty.common.utils.JwtInfo;
 import com.cloudera.poverty.common.utils.JwtUtils;
 import com.cloudera.poverty.entity.admin.UserRole;
 import com.cloudera.poverty.entity.admin.UserTable;
+import com.cloudera.poverty.entity.region.DistrictTable;
+import com.cloudera.poverty.entity.region.ResettlementPointTable;
+import com.cloudera.poverty.entity.region.TownshipTable;
 import com.cloudera.poverty.entity.vo.LoginVo;
 import com.cloudera.poverty.entity.vo.UserQueryVo;
 import com.cloudera.poverty.entity.vo.UserTableVo;
@@ -18,8 +21,7 @@ import com.cloudera.poverty.mapper.DistrictTableMapper;
 import com.cloudera.poverty.mapper.ResettlementPointTableMapper;
 import com.cloudera.poverty.mapper.TownshipTableMapper;
 import com.cloudera.poverty.mapper.UserTabMapper;
-import com.cloudera.poverty.service.IUserRoleService;
-import com.cloudera.poverty.service.UserTabService;
+import com.cloudera.poverty.service.*;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,18 +41,10 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
     private TownshipTableMapper townshipTableMapper;
     @Autowired
     private ResettlementPointTableMapper resettlementPointTableMapper;
-//    @Autowired
-//    private UserRoleMapper userRoleMapper;
     @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
     IUserRoleService userRoleService;
-//    @Autowired
-//    private RoleMapper roleMapper;
-//    @Autowired
-//    private RoleAuthorityMapper roleAuthorityMapper;
-//    @Autowired
-//    private AuthorityMapper authorityMapper;
 
     @Override
     public String saveUser(UserTableVo userTable) {
@@ -143,8 +137,20 @@ public class UserTabServiceImpl extends ServiceImpl<UserTabMapper, UserTable> im
         jwtInfo.setRegional(userTable.getRegionalId());
         jwtInfo.setLevel(userTable.getLevel());
         jwtInfo.setDid(userTable.getDid());
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(userTable.getDid())){
+            DistrictTable d = this.districtTableMapper.selectById(userTable.getDid());
+            jwtInfo.setDname(d==null?null:d.getDistrict());
+        }
         jwtInfo.setTid(userTable.getTid());
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(userTable.getTid())){
+            TownshipTable d = this.townshipTableMapper.selectById(userTable.getTid());
+            jwtInfo.setTname(d==null?null:d.getTownship());
+        }
         jwtInfo.setRid(userTable.getRid());
+        if(org.apache.commons.lang3.StringUtils.isNotEmpty(userTable.getRid())){
+            ResettlementPointTable d = this.resettlementPointTableMapper.selectById(userTable.getRid());
+            jwtInfo.setRname(d==null?null:d.getResettlementPoint());
+        }
         jwtInfo.setUserName(userTable.getUserName());
         String jwtToken = JwtUtils.getJwtToken(jwtInfo, 14400);
         return jwtToken;

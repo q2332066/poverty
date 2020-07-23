@@ -2,14 +2,16 @@ package com.cloudera.poverty.controlller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.cloudera.poverty.base.exception.PaException;
+import com.cloudera.poverty.annotation.SystemLog;
 import com.cloudera.poverty.common.result.Lay;
 import com.cloudera.poverty.common.result.R;
-import com.cloudera.poverty.common.result.ResultCodeEnum;
 import com.cloudera.poverty.common.utils.JwtUtils;
 import com.cloudera.poverty.entity.admin.UserRole;
 import com.cloudera.poverty.entity.admin.UserTable;
-import com.cloudera.poverty.entity.vo.*;
+import com.cloudera.poverty.entity.vo.LoginVo;
+import com.cloudera.poverty.entity.vo.UserQueryVo;
+import com.cloudera.poverty.entity.vo.UserTableVo;
+import com.cloudera.poverty.entity.vo.UserVo;
 import com.cloudera.poverty.service.IRoleService;
 import com.cloudera.poverty.service.IUserRoleService;
 import com.cloudera.poverty.service.UserTabService;
@@ -120,28 +122,23 @@ public class UserTabController {
     @ApiOperation(value = "根据token获取登录信息")
     @RequestMapping(value = "get-login-info",method = RequestMethod.GET,name = "API-SELECT")
     public R getLoginInfo(HttpServletRequest request){
-//        try{
-            Claims claims = JwtUtils.getMemberIdByJwtToken(request);
-            String uid = (String) claims.get("uid");
-            String showname = (String) claims.get("showname");
-            String regional = (String) claims.get("regional");
-            String level = (String) claims.get("level");
-            String did = (String) claims.get("did");
-            String tid = (String) claims.get("tid");
-            String rid = (String) claims.get("rid");
-            UserTable userTable = new UserTable();
-            userTable.setUId(uid);
-            userTable.setShowName(showname);
-            userTable.setRegionalId(regional);
-            userTable.setLevel(level);
-            userTable.setDid(did);
-            userTable.setTid(tid);
-            userTable.setRid(rid);
-            return R.ok().data("userInfo", userTable);
-//        }catch (Exception e){
-//            log.error("解析用户信息失败，" + e.getMessage());
-//            throw new PaException(ResultCodeEnum.FETCH_USERINFO_ERROR);
-//        }
+        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
+        String uid = (String) claims.get("uid");
+        String showname = (String) claims.get("showname");
+        String regional = (String) claims.get("regional");
+        String level = (String) claims.get("level");
+        String did = (String) claims.get("did");
+        String tid = (String) claims.get("tid");
+        String rid = (String) claims.get("rid");
+        UserTable userTable = new UserTable();
+        userTable.setUId(uid);
+        userTable.setShowName(showname);
+        userTable.setRegionalId(regional);
+        userTable.setLevel(level);
+        userTable.setDid(did);
+        userTable.setTid(tid);
+        userTable.setRid(rid);
+        return R.ok().data("userInfo", userTable);
     }
 
     @ApiOperation("账号角色权限")
@@ -151,10 +148,8 @@ public class UserTabController {
         return Lay.ok().data(userVo);
     }
 
-
-
-
     @ApiOperation("修改账号")
+    @SystemLog(description = "修改账号操作")
     @RequestMapping(value = "updateuser",method = RequestMethod.POST,name = "API-SELECT")
     public Lay updateUser(
             @RequestBody UserTableVo userTable){
@@ -205,6 +200,7 @@ public class UserTabController {
     }
 
     @ApiOperation("查询账号条件")
+    @SystemLog(description = "查询全部账号操作")
     @RequestMapping(value = "selectUser",method = RequestMethod.POST,name = "API-USER")
     public Lay selectTree(@RequestBody UserQueryVo userQueryVo, HttpServletRequest request){
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);

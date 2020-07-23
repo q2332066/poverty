@@ -3,6 +3,7 @@ package com.cloudera.poverty.controlller.api;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudera.poverty.annotation.SystemLog;
 import com.cloudera.poverty.base.exception.PaException;
 import com.cloudera.poverty.common.result.Lay;
 import com.cloudera.poverty.common.result.ResultCodeEnum;
@@ -133,6 +134,7 @@ public class PersonnelInformationTableController {
     }
 
     @ApiOperation("自定义查询人员")
+    @SystemLog(description = "查询人员列表操作")
     @RequestMapping(value = "select/tree", method = RequestMethod.POST, name = "API-SELECT-PERSON")
     public Lay findAll(@RequestBody PersonQueryVo personQueryVo, HttpServletRequest request) {
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);

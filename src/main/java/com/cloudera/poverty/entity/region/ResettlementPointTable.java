@@ -1,6 +1,7 @@
 package com.cloudera.poverty.entity.region;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -27,7 +28,7 @@ public class ResettlementPointTable implements Serializable {
     private static final long serialVersionUID=1L;
 
     @ApiModelProperty(value = "安置点id")
-      @TableId(value = "r_id", type = IdType.ASSIGN_ID)
+    @TableId(value = "r_id", type = IdType.ASSIGN_ID)
     private String rId;
 
     @ApiModelProperty(value = "安置点名称")
@@ -77,5 +78,12 @@ public class ResettlementPointTable implements Serializable {
 
     @ApiModelProperty(value = "带动户数")
     private Integer driveNum;
-    
+
+    @ApiModelProperty(value = "数结构ID")
+    @TableField(exist = false)
+    private String id;
+
+    @ApiModelProperty(value = "数结构父ID")
+    @TableField(exist = false)
+    private String parentId;
 }
