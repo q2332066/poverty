@@ -269,7 +269,7 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         careerPolicyTableMapper.delete(wrapperCareer);
 
         QueryWrapper<EnjoyHelpPolicyTable> wrapperEnjoy=new QueryWrapper<>();
-        wrapperCareer.eq("personnel_information_id",id);
+        wrapperEnjoy.eq("personnel_information_id",id);
         enjoyHelpPolicyTableMapper.delete(wrapperEnjoy);
 
         baseMapper.deleteById(id);
@@ -285,9 +285,7 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
         PersonnelInformationTable personnelInformationTable = new PersonnelInformationTable();
         BeanUtils.copyProperties(personGetAllVo,personnelInformationTable);
         String pId = personGetAllVo.getPId();
-//        if(org.apache.commons.lang3.StringUtils.isEmpty(pId)){
-//            pId = personGetAllVo.getPid();
-//        }
+
         baseMapper.updateById(personnelInformationTable);
 
         QueryWrapper wrapper=new QueryWrapper();

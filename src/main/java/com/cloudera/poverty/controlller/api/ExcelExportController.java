@@ -36,7 +36,7 @@ public class ExcelExportController {
     @GetMapping("/export")
     public void export(PersonQueryVo personQueryVo, HttpServletRequest request, HttpServletResponse response) throws IOException {
         personQueryVo.setPage(1L);
-        personQueryVo.setLimit(100000L);
+        personQueryVo.setLimit(200000L);
 //        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
         String regionalId = personQueryVo.getRegional();
         String level = personQueryVo.getLevel();
