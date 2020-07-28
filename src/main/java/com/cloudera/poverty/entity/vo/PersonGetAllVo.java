@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -303,5 +304,15 @@ public class PersonGetAllVo {
     @ApiModelProperty(value = "市名称")
     private String cityName;
 
-
+    /** 就业创业政策完成度 */
+    private String careerCompete;
+    /** 已享受帮扶完成度 */
+    private String enjoyCompete;
+    /** 产业发展完成度 */
+    private String industCompete;
+    /** 人员信息完成度 */
+    private String personCompete;
+    private Integer sumCompete;
+    private Integer sumLength;
+    private BigDecimal divCompete = BigDecimal.ZERO;
 }
