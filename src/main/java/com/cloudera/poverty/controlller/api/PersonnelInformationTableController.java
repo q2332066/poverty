@@ -7,16 +7,27 @@ import com.cloudera.poverty.annotation.SystemLog;
 import com.cloudera.poverty.base.exception.PaException;
 import com.cloudera.poverty.common.result.Lay;
 import com.cloudera.poverty.common.result.ResultCodeEnum;
+import com.cloudera.poverty.common.utils.CompeteUtils;
 import com.cloudera.poverty.common.utils.ExceptionUtils;
 import com.cloudera.poverty.common.utils.JwtUtils;
+import com.cloudera.poverty.entity.api.CareerPolicyTable;
+import com.cloudera.poverty.entity.api.EnjoyHelpPolicyTable;
+import com.cloudera.poverty.entity.api.IndustrialPolicyTable;
+import com.cloudera.poverty.entity.api.PersonnelInformationTable;
+import com.cloudera.poverty.entity.region.DistrictTable;
+import com.cloudera.poverty.entity.region.ResettlementPointTable;
+import com.cloudera.poverty.entity.region.TownshipTable;
 import com.cloudera.poverty.entity.vo.PersonGetAllVo;
 import com.cloudera.poverty.entity.vo.PersonQueryVo;
-import com.cloudera.poverty.service.PersonnelInformationTableService;
+import com.cloudera.poverty.service.*;
+import com.google.gson.JsonObject;
 import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +36,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -46,6 +61,14 @@ public class PersonnelInformationTableController {
     private PersonnelInformationTableService personnelInformationService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private CityService cityService;
+    @Autowired
+    private DistrictTableService districtTableService;
+    @Autowired
+    private TownshipTableService townshipTableService;
+    @Autowired
+    private ResettlementPointTableService resettlementPointTableService;
 
     //人员添加
     @ApiOperation("人员基本信息添加")
@@ -150,6 +173,159 @@ public class PersonnelInformationTableController {
         IPage<PersonGetAllVo> allVoIPage = personnelInformationService.findAll(personQueryVo, level, regionalId);
         long total = allVoIPage.getTotal();
         List<PersonGetAllVo> records = allVoIPage.getRecords();
+        return Lay.ok().count(total).data(records);
+    }
+
+    @RequestMapping(value = "compete/bar", method = RequestMethod.POST, name = "API-SELECT-PERSON")
+    public Lay findAllCompeteEcharts(@RequestBody PersonQueryVo personQueryVo, HttpServletRequest request) throws IllegalAccessException {
+        personQueryVo.setPage(1L);
+        personQueryVo.setLimit(100000L);
+
+        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
+        String regionalId = (String) claims.get("regional");
+        String level = (String) claims.get("level");
+        if (level.equals("2")) {
+            regionalId = (String) claims.get("did");
+        } else if (level.equals("3")) {
+            regionalId = (String) claims.get("tid");
+        } else if (level.equals("4")) {
+            regionalId = (String) claims.get("rid");
+        }
+        IPage<PersonGetAllVo> allVoIPage = personnelInformationService.findAll(personQueryVo, level, regionalId);
+        long total = allVoIPage.getTotal();
+        List<PersonGetAllVo> records = allVoIPage.getRecords();
+        for (PersonGetAllVo vo : records) {
+            int sumCompete = 0, sumLength = 0;
+            CareerPolicyTable cpt = new CareerPolicyTable();
+            BeanUtils.copyProperties(vo, cpt);
+            JSONObject obj = CompeteUtils.getCompete(cpt);
+            vo.setCareerCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+            sumCompete += obj.getInteger("compete");
+            sumLength += obj.getInteger("length");
+
+            EnjoyHelpPolicyTable ehpt = new EnjoyHelpPolicyTable();
+            BeanUtils.copyProperties(vo, ehpt);
+            obj = CompeteUtils.getCompete(ehpt);
+            vo.setEnjoyCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+            sumCompete += obj.getInteger("compete");
+            sumLength += obj.getInteger("length");
+
+            IndustrialPolicyTable ipt = new IndustrialPolicyTable();
+            BeanUtils.copyProperties(vo, ipt);
+            obj = CompeteUtils.getCompete(ipt);
+            vo.setIndustCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+            sumCompete += obj.getInteger("compete");
+            sumLength += obj.getInteger("length");
+
+            PersonnelInformationTable pit = new PersonnelInformationTable();
+            BeanUtils.copyProperties(vo, pit);
+            obj = CompeteUtils.getCompete(pit);
+            vo.setPersonCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+            sumCompete += obj.getInteger("compete");
+            sumLength += obj.getInteger("length");
+
+            vo.setSumCompete(sumCompete);
+            vo.setSumLength(sumLength);
+            vo.setDivCompete(new BigDecimal(sumCompete*100).divide(new BigDecimal(sumLength),4, RoundingMode.HALF_UP));
+        }
+        return Lay.ok().data(getLevel(personQueryVo, records));
+    }
+
+    private JSONObject getLevel(PersonQueryVo vo, List<PersonGetAllVo> records) {
+        JSONObject rs = new JSONObject();
+        List<String> names = new ArrayList<>();
+        int level = 4;
+        //安置点
+        if (StringUtils.isNotEmpty(vo.getRid())) {
+            level = 4;
+        } else if (StringUtils.isNotEmpty(vo.getTowId())) {
+            level = 3;
+            names = this.cityService.selectRes(vo.getTowId())
+                    .stream()
+                    .map(ResettlementPointTable::getResettlementPoint)
+                    .collect(Collectors.toList());
+        } else if (StringUtils.isNotEmpty(vo.getDisId())) {
+            level = 2;
+            names = this.cityService.selectTow(vo.getDisId())
+                    .stream()
+                    .map(TownshipTable::getTownship)
+                    .collect(Collectors.toList());
+        } else {
+            level = 1;
+            names = this.cityService.selectDis(vo.getCityId())
+                    .stream()
+                    .map(DistrictTable::getDistrict)
+                    .collect(Collectors.toList());
+        }
+
+        List<BigDecimal> values = new ArrayList<>();
+        for (String name : names) {
+            if (level == 1) {
+                values.add(records.
+                        stream()
+                        .filter(record -> name.equals(record.getDistrict()))
+                        .map(PersonGetAllVo::getDivCompete)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .divide(BigDecimal.valueOf(records.size()),2, RoundingMode.HALF_UP));
+            } else if(level == 2){
+                values.add(records.
+                        stream()
+                        .filter(record -> name.equals(record.getTownship()))
+                        .map(PersonGetAllVo::getDivCompete)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .divide(BigDecimal.valueOf(records.size()),2, RoundingMode.HALF_UP));
+            } else if(level == 3){
+                values.add(records.
+                        stream()
+                        .filter(record -> name.equals(record.getResettlementPoint()))
+                        .map(PersonGetAllVo::getDivCompete)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .divide(BigDecimal.valueOf(records.size()),2, RoundingMode.HALF_UP));
+            }
+        }
+
+        rs.put("names", names);
+        rs.put("values", values);
+        return rs;
+    }
+
+    @ApiOperation("查询人员完成度")
+    @RequestMapping(value = "compete/tree", method = RequestMethod.POST, name = "API-SELECT-PERSON")
+    public Lay findAllCompete(@RequestBody PersonQueryVo personQueryVo, HttpServletRequest request) throws IllegalAccessException {
+        Claims claims = JwtUtils.getMemberIdByJwtToken(request);
+        String regionalId = (String) claims.get("regional");
+        String level = (String) claims.get("level");
+        if (level.equals("2")) {
+            regionalId = (String) claims.get("did");
+        } else if (level.equals("3")) {
+            regionalId = (String) claims.get("tid");
+        } else if (level.equals("4")) {
+            regionalId = (String) claims.get("rid");
+        }
+        IPage<PersonGetAllVo> allVoIPage = personnelInformationService.findAll(personQueryVo, level, regionalId);
+        long total = allVoIPage.getTotal();
+        List<PersonGetAllVo> records = allVoIPage.getRecords();
+        for (PersonGetAllVo vo : records) {
+            CareerPolicyTable cpt = new CareerPolicyTable();
+            BeanUtils.copyProperties(vo, cpt);
+            JSONObject obj = CompeteUtils.getCompete(cpt);
+            vo.setCareerCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+
+            EnjoyHelpPolicyTable ehpt = new EnjoyHelpPolicyTable();
+            BeanUtils.copyProperties(vo, ehpt);
+            obj = CompeteUtils.getCompete(ehpt);
+            vo.setEnjoyCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+
+            IndustrialPolicyTable ipt = new IndustrialPolicyTable();
+            BeanUtils.copyProperties(vo, ipt);
+            obj = CompeteUtils.getCompete(ipt);
+            vo.setIndustCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+
+            PersonnelInformationTable pit = new PersonnelInformationTable();
+            BeanUtils.copyProperties(vo, pit);
+            obj = CompeteUtils.getCompete(pit);
+            vo.setPersonCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+        }
         return Lay.ok().count(total).data(records);
     }
 }

@@ -1,8 +1,8 @@
-package com.cloudera.poverty.util;
+package com.cloudera.poverty.common.utils;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class IpUtil {
+public class IpUtils {
 
     public static String getIpAddrByRequest(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");

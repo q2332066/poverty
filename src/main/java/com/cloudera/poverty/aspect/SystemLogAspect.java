@@ -1,10 +1,9 @@
 package com.cloudera.poverty.aspect;
 
 import com.cloudera.poverty.annotation.SystemLog;
+import com.cloudera.poverty.common.utils.IpUtils;
 import com.cloudera.poverty.common.utils.JwtUtils;
-import com.cloudera.poverty.util.IpUtil;
 import io.jsonwebtoken.Claims;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
@@ -63,7 +62,7 @@ public class SystemLogAspect {
         prop.put("username", claims.get("showname"));
         prop.put("params", sb.toString());
         prop.put("uid", claims.get("uid"));
-        prop.put("ip", IpUtil.getIpAddrByRequest(request));
+        prop.put("ip", IpUtils.getIpAddrByRequest(request));
         this.customLogic.execute(prop);
         return joinPoint.proceed();
     }
