@@ -39,6 +39,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -193,6 +194,10 @@ public class PersonnelInformationTableController {
         }
         IPage<PersonGetAllVo> allVoIPage = personnelInformationService.findAll(personQueryVo, level, regionalId);
         long total = allVoIPage.getTotal();
+        int sumCar = 0, sumCarLen = 0;
+        int sumEnj = 0, sumEnjLen = 0;
+        int sumInd = 0, sumIndLen = 0;
+        int sumPer = 0, sumPerLen = 0;
         List<PersonGetAllVo> records = allVoIPage.getRecords();
         for (PersonGetAllVo vo : records) {
             int sumCompete = 0, sumLength = 0;
@@ -200,6 +205,8 @@ public class PersonnelInformationTableController {
             BeanUtils.copyProperties(vo, cpt);
             JSONObject obj = CompeteUtils.getCompete(cpt);
             vo.setCareerCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+            sumCar += obj.getInteger("compete");
+            sumCarLen += obj.getInteger("length");
             sumCompete += obj.getInteger("compete");
             sumLength += obj.getInteger("length");
 
@@ -209,6 +216,8 @@ public class PersonnelInformationTableController {
             vo.setEnjoyCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
             sumCompete += obj.getInteger("compete");
             sumLength += obj.getInteger("length");
+            sumEnj += obj.getInteger("compete");
+            sumEnjLen += obj.getInteger("length");
 
             IndustrialPolicyTable ipt = new IndustrialPolicyTable();
             BeanUtils.copyProperties(vo, ipt);
@@ -216,6 +225,8 @@ public class PersonnelInformationTableController {
             vo.setIndustCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
             sumCompete += obj.getInteger("compete");
             sumLength += obj.getInteger("length");
+            sumInd += obj.getInteger("compete");
+            sumIndLen += obj.getInteger("length");
 
             PersonnelInformationTable pit = new PersonnelInformationTable();
             BeanUtils.copyProperties(vo, pit);
@@ -223,70 +234,22 @@ public class PersonnelInformationTableController {
             vo.setPersonCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
             sumCompete += obj.getInteger("compete");
             sumLength += obj.getInteger("length");
+            sumPer += obj.getInteger("compete");
+            sumPerLen += obj.getInteger("length");
 
             vo.setSumCompete(sumCompete);
             vo.setSumLength(sumLength);
             vo.setDivCompete(new BigDecimal(sumCompete*100).divide(new BigDecimal(sumLength),4, RoundingMode.HALF_UP));
         }
-        return Lay.ok().data(getLevel(personQueryVo, records));
-    }
-
-    private JSONObject getLevel(PersonQueryVo vo, List<PersonGetAllVo> records) {
         JSONObject rs = new JSONObject();
-        List<String> names = new ArrayList<>();
-        int level = 4;
-        //安置点
-        if (StringUtils.isNotEmpty(vo.getRid())) {
-            level = 4;
-        } else if (StringUtils.isNotEmpty(vo.getTowId())) {
-            level = 3;
-            names = this.cityService.selectRes(vo.getTowId())
-                    .stream()
-                    .map(ResettlementPointTable::getResettlementPoint)
-                    .collect(Collectors.toList());
-        } else if (StringUtils.isNotEmpty(vo.getDisId())) {
-            level = 2;
-            names = this.cityService.selectTow(vo.getDisId())
-                    .stream()
-                    .map(TownshipTable::getTownship)
-                    .collect(Collectors.toList());
-        } else {
-            level = 1;
-            names = this.cityService.selectDis(vo.getCityId())
-                    .stream()
-                    .map(DistrictTable::getDistrict)
-                    .collect(Collectors.toList());
-        }
-
         List<BigDecimal> values = new ArrayList<>();
-        for (String name : names) {
-            if (level == 1) {
-                values.add(records.
-                        stream()
-                        .filter(record -> name.equals(record.getDistrict()))
-                        .map(PersonGetAllVo::getDivCompete)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(records.size()),2, RoundingMode.HALF_UP));
-            } else if(level == 2){
-                values.add(records.
-                        stream()
-                        .filter(record -> name.equals(record.getTownship()))
-                        .map(PersonGetAllVo::getDivCompete)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(records.size()),2, RoundingMode.HALF_UP));
-            } else if(level == 3){
-                values.add(records.
-                        stream()
-                        .filter(record -> name.equals(record.getResettlementPoint()))
-                        .map(PersonGetAllVo::getDivCompete)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .divide(BigDecimal.valueOf(records.size()),2, RoundingMode.HALF_UP));
-            }
-        }
-
-        rs.put("names", names);
+        values.add(new BigDecimal(sumPer*100).divide(new BigDecimal(sumPerLen),2, RoundingMode.HALF_UP));
+        values.add(new BigDecimal(sumCar*100).divide(new BigDecimal(sumCarLen),2, RoundingMode.HALF_UP));
+        values.add(new BigDecimal(sumEnj*100).divide(new BigDecimal(sumEnjLen),2, RoundingMode.HALF_UP));
+        values.add(new BigDecimal(sumInd*100).divide(new BigDecimal(sumIndLen),2, RoundingMode.HALF_UP));
+        rs.put("names", Arrays.asList("人员信息", "就业创业", "已享受帮扶", "产业发展"));
         rs.put("values", values);
-        return rs;
+        return Lay.ok().data(rs);
     }
 
     @ApiOperation("查询人员完成度")

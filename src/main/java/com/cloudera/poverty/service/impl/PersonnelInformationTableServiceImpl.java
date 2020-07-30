@@ -31,6 +31,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -327,7 +328,7 @@ public class PersonnelInformationTableServiceImpl extends ServiceImpl<PersonnelI
     @Override
     public IPage<PersonGetAllVo> findAll(PersonQueryVo personQueryVo, String level, String regionalId) {
         QueryWrapper<PersonGetAllVo> wrapper=new QueryWrapper<>();
-        wrapper.orderByDesc("P.host_id");
+//        wrapper.orderByDesc("P.host_id");
         if (level.equals("2")){
             wrapper.eq("D.d_id", regionalId);
         }
