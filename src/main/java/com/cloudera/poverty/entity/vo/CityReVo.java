@@ -14,5 +14,6 @@ public class CityReVo {
     private String dId;
     private String tId;
     private String rId;
+    private String id;
     private String name;
 }

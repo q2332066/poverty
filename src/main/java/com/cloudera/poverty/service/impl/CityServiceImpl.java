@@ -2,6 +2,7 @@ package com.cloudera.poverty.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cloudera.poverty.base.exception.PaException;
 import com.cloudera.poverty.entity.admin.UserTable;
 import com.cloudera.poverty.entity.region.City;
 import com.cloudera.poverty.entity.region.DistrictTable;
@@ -122,6 +123,44 @@ public class CityServiceImpl extends ServiceImpl<CityMapper, City> implements Ci
         QueryWrapper<TownshipTable> district_id = townshipTableQueryWrapper.eq("district_id", districtId);
         List<TownshipTable> townshipTableList = townshipTableMapper.selectList(townshipTableQueryWrapper);
         return townshipTableList;
+    }
+
+    @Override
+    public void update(CityReVo cityReVo) {
+        String rId = cityReVo.getRId();
+        String tId = cityReVo.getTId();
+        String dId = cityReVo.getDId();
+        String ciId = cityReVo.getCiId();
+        String id = cityReVo.getId();
+        String name = cityReVo.getName();
+        if(id.equals(rId)){
+            throw new PaException("根节点不能删除", 20002);
+        }
+
+        if (!StringUtils.isEmpty(ciId)) {
+            DistrictTable districtTable = new DistrictTable();
+            districtTable.setDId(id);
+            districtTable.setCityId(ciId);
+            districtTable.setDistrict(name);
+            districtTableMapper.updateById(districtTable);
+            return;
+        }
+        if (StringUtils.isEmpty(rId)&&!StringUtils.isEmpty(tId)) {
+            ResettlementPointTable resettlementPointTable = new ResettlementPointTable();
+            resettlementPointTable.setRId(id);
+            resettlementPointTable.setTownshipId(tId);
+            resettlementPointTable.setResettlementPoint(name);
+            resettlementPointTableMapper.updateById(resettlementPointTable);
+            return;
+        }
+        if (StringUtils.isEmpty(tId)&&!StringUtils.isEmpty(dId)) {
+            TownshipTable townshipTable = new TownshipTable();
+            townshipTable.setTId(id);
+            townshipTable.setDistrictId(dId);
+            townshipTable.setTownship(name);
+            townshipTableMapper.updateById(townshipTable);
+            return;
+        }
     }
 
     //Layui返回
