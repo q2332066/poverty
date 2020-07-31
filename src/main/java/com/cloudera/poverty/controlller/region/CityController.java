@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author
@@ -47,8 +47,8 @@ public class CityController {
 
 
     @ApiOperation("地域树获取")
-    @RequestMapping(value = "list",method = RequestMethod.POST,name = "API-DEPT")
-    public Lay nestedList(HttpServletRequest request){
+    @RequestMapping(value = "list", method = RequestMethod.POST, name = "API-DEPT")
+    public Lay nestedList(HttpServletRequest request) {
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);
         String uid = (String) claims.get("uid");
         String showname = (String) claims.get("showname");
@@ -66,53 +66,78 @@ public class CityController {
         userTable.setRid(rid);
         userTable.setLevel(level);
 
-        List<CityVo> items=cityService.nestList(userTable);
+        List<CityVo> items = cityService.nestList(userTable);
         return Lay.ok().data(items);
     }
 
     @ApiOperation("地域获取")
-    @RequestMapping(value = "selectlist",method = RequestMethod.POST,name = "API-DEPT")
-    public Lay selectList(){
-        List<CityAllVo> cityVoList=cityService.selectList();
+    @RequestMapping(value = "selectlist", method = RequestMethod.POST, name = "API-DEPT")
+    public Lay selectList() {
+        List<CityAllVo> cityVoList = cityService.selectList();
         int count = cityService.count();
         int count1 = districtTableService.count();
         int count2 = townshipTableService.count();
         int count3 = resettlementPointTableService.count();
-        int lon=count+count2+count3+count1;
+        int lon = count + count2 + count3 + count1;
         return Lay.ok().count((long) lon).data(cityVoList);
     }
+
     @ApiOperation("地域添加")
-    @RequestMapping(value = "save",method = RequestMethod.POST,name = "API-DEPT")
+    @RequestMapping(value = "save", method = RequestMethod.POST, name = "API-DEPT")
     public Lay saveList(@RequestParam(required = false) String ciId,
                         @RequestParam(required = false) String dId,
                         @RequestParam(required = false) String tId,
-                        @RequestParam(required = false) String name){
-       CityReVo cityReVo=new CityReVo();
-       if(ciId!=null){
-           cityReVo.setCiId(ciId);
-       }
-        if(dId!=null){
+                        @RequestParam(required = false) String name) {
+        CityReVo cityReVo = new CityReVo();
+        if (ciId != null) {
+            cityReVo.setCiId(ciId);
+        }
+        if (dId != null) {
             cityReVo.setDId(dId);
         }
-        if(tId!=null){
+        if (tId != null) {
             cityReVo.setTId(tId);
         }
 
 
-       cityReVo.setName(name);
+        cityReVo.setName(name);
         cityService.saveList(cityReVo);
         return Lay.ok().msg("成功");
     }
-    @ApiOperation("地域删除,所有id要不相同")
-    @RequestMapping(value = "delete",method = RequestMethod.POST,name = "API-DEPT")
-    public Lay deleteList(@RequestParam(required = false) String rId, @RequestParam(required = false) String dId,
-                          @RequestParam(required = false) String tId){
 
-        if(StringUtils.isNotBlank(rId)){
+    @ApiOperation("地域添加")
+    @PostMapping(value = "update", name = "API-DEPT")
+    public Lay update(@RequestParam(required = false) String ciId,
+                      @RequestParam(required = false) String dId,
+                      @RequestParam(required = false) String tId,
+                      @RequestParam(required = false) String id,
+                      @RequestParam(required = false) String name) {
+        CityReVo cityReVo = new CityReVo();
+        if (ciId != null) {
+            cityReVo.setCiId(ciId);
+        }
+        if (dId != null) {
+            cityReVo.setDId(dId);
+        }
+        if (tId != null) {
+            cityReVo.setTId(tId);
+        }
+        cityReVo.setId(id);
+        cityReVo.setName(name);
+        cityService.update(cityReVo);
+        return Lay.ok().msg("成功");
+    }
+
+    @ApiOperation("地域删除,所有id要不相同")
+    @RequestMapping(value = "delete", method = RequestMethod.POST, name = "API-DEPT")
+    public Lay deleteList(@RequestParam(required = false) String rId, @RequestParam(required = false) String dId,
+                          @RequestParam(required = false) String tId) {
+
+        if (StringUtils.isNotBlank(rId)) {
             resettlementPointTableService.removeById(rId);
-        } else if(StringUtils.isNotBlank(dId)){
+        } else if (StringUtils.isNotBlank(dId)) {
             districtTableService.removeById(dId);
-        } else if(StringUtils.isNotBlank(tId)){
+        } else if (StringUtils.isNotBlank(tId)) {
             townshipTableService.removeById(tId);
         }
         return Lay.ok().msg("删除成功");

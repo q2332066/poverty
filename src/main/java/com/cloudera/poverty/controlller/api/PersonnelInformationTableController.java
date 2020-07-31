@@ -3,6 +3,7 @@ package com.cloudera.poverty.controlller.api;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.cloudera.poverty.annotation.FmtType;
 import com.cloudera.poverty.annotation.SystemLog;
 import com.cloudera.poverty.base.exception.PaException;
 import com.cloudera.poverty.common.result.Lay;
@@ -62,17 +63,10 @@ public class PersonnelInformationTableController {
     private PersonnelInformationTableService personnelInformationService;
     @Autowired
     private RedisTemplate redisTemplate;
-    @Autowired
-    private CityService cityService;
-    @Autowired
-    private DistrictTableService districtTableService;
-    @Autowired
-    private TownshipTableService townshipTableService;
-    @Autowired
-    private ResettlementPointTableService resettlementPointTableService;
 
     //人员添加
     @ApiOperation("人员基本信息添加")
+    @SystemLog(description = "新增人员[{name}]", sysParams = "personGetAllVo")
     @RequestMapping(value = "save", method = RequestMethod.POST, name = "API-SELECT-PERSON")
     public Lay savePersonnelInformation(
             @ApiParam(value = "人员基本信息")
@@ -83,11 +77,12 @@ public class PersonnelInformationTableController {
 
     //连表删除
     @ApiOperation("删除人员信息")
-    @RequestMapping(value = "delete", method = RequestMethod.GET, name = "API-SELECT-PERSON")
+    @SystemLog(description = "删除[{name}]的人员所有信息资料", formatType = FmtType.Bean, beanType = PersonnelInformationTableService.class)
+    @PostMapping(value = "delete", name = "API-SELECT-PERSON")
     public Lay deletePersonnelInformation(
-            @ApiParam(value = "删除人员", required = true) @RequestParam String id
+            @ApiParam(value = "删除人员", required = true) String ids
     ) {
-        boolean b = personnelInformationService.removePerById(id);
+        boolean b = personnelInformationService.removePerById(ids);
         if (b) {
             return Lay.ok().msg("删除成功");
         } else {
@@ -107,6 +102,7 @@ public class PersonnelInformationTableController {
 
     //更新人员基本
     @ApiOperation("更新人员信息")
+    @SystemLog(description = "更新人员[{name}]，更新内容为[{personGetAllVo}]", sysParams = "personGetAllVo")
     @RequestMapping(value = "update", method = RequestMethod.POST, name = "API-SELECT-PERSON")
     public Lay updatePersonnelInformation(
             @ApiParam(value = "人员信息", required = true)
@@ -121,6 +117,7 @@ public class PersonnelInformationTableController {
 
     //导入excel
     @ApiOperation("批量导入")
+    @SystemLog(description = "批量导入文件[文件名：{filename}, 大小为：{size}]", sysParams = "file")
     @RequestMapping(value = "import", name = "API-IMPORT")
     public Lay batchImport(
             @ApiParam(value = "Excel", required = true)
@@ -145,20 +142,16 @@ public class PersonnelInformationTableController {
 
     @ApiOperation("删除人员信息")
     @RequestMapping(value = "deleteList", method = RequestMethod.POST, name = "API-SELECT-PERSON")
+    @SystemLog(description = "删除[{length}]个人员所有信息", formatType = FmtType.Bean, beanType = PersonnelInformationTableService.class)
     @Transactional
-    public Lay deletePers(
-            @ApiParam(value = "删除人员", required = true) @RequestBody Map<String, Object> idList
-    ) {
-        List<String> list = (List<String>) idList.get("ids");
-        for (int i = 0; i < list.size(); i++) {
-            String o = list.get(i);
-            personnelInformationService.removePerById(o);
+    public Lay deletePers(@ApiParam(value = "删除人员", required = true) @RequestParam(value = "ids[]") String[] ids) {
+        for (String id : ids) {
+            personnelInformationService.removePerById(id);
         }
         return Lay.ok().msg("删除成功");
     }
 
     @ApiOperation("自定义查询人员")
-    @SystemLog(description = "查询人员列表操作")
     @RequestMapping(value = "select/tree", method = RequestMethod.POST, name = "API-SELECT-PERSON")
     public Lay findAll(@RequestBody PersonQueryVo personQueryVo, HttpServletRequest request) {
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);

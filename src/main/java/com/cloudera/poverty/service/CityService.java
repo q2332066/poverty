@@ -23,10 +23,14 @@ import java.util.List;
 public interface CityService extends IService<City> {
 
     List<CityVo> nestList(UserTable userTable);
+
     List<ResettlementPointTable> selectRes(String towId);
+
     List<DistrictTable> selectDis(String cityId);
+
     List<TownshipTable> selectTow(String districtId);
 
+    void update(CityReVo vo);
 
     List<CityAllVo> selectList();
 

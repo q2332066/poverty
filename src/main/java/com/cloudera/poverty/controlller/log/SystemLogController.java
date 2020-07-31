@@ -1,6 +1,7 @@
 package com.cloudera.poverty.controlller.log;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cloudera.poverty.common.result.Lay;
 import com.cloudera.poverty.entity.system.SystemLog;
@@ -30,6 +31,8 @@ public class SystemLogController {
     public Lay list(@RequestParam(name = "page", defaultValue = "0") Integer pageNumber,
                                @RequestParam(name = "limit", defaultValue = "10") Integer pageSize){
         Page<SystemLog> page = new Page<>(pageNumber, pageSize);
-        return Lay.ok().code(0).data((this.systemLogService.page(page)));
+        QueryWrapper<SystemLog> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderByDesc("operation_date");
+        return Lay.ok().code(0).data((this.systemLogService.page(page, queryWrapper)));
     }
 }
