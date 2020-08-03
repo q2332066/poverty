@@ -200,7 +200,6 @@ public class UserTabController {
     }
 
     @ApiOperation("查询账号条件")
-    @SystemLog(description = "查询全部账号操作")
     @RequestMapping(value = "selectUser",method = RequestMethod.POST,name = "API-USER")
     public Lay selectTree(@RequestBody UserQueryVo userQueryVo, HttpServletRequest request){
         Claims claims = JwtUtils.getMemberIdByJwtToken(request);
