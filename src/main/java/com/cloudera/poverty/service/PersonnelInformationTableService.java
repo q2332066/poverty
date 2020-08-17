@@ -3,6 +3,7 @@ package com.cloudera.poverty.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.cloudera.poverty.entity.api.PersonnelInformationTable;
+import com.cloudera.poverty.entity.vo.Percentage;
 import com.cloudera.poverty.entity.vo.PersonGetAllVo;
 import com.cloudera.poverty.entity.vo.PersonQueryVo;
 import com.cloudera.poverty.entity.vo.excel.PersonAllVo;
@@ -42,4 +43,9 @@ public interface PersonnelInformationTableService extends IService<PersonnelInfo
     IPage<PersonGetAllVo> findAll(PersonQueryVo personQueryVo, String level, String regionalId);
 
     IPage<PersonAllVo> findAllExcel(PersonQueryVo personQueryVo, String level, String regionalId);
+
+    List<Percentage> percentage();
+
+
+    List<PersonGetAllVo> findPerL(String dId);
 }

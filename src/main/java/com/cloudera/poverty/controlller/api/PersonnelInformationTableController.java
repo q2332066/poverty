@@ -18,6 +18,7 @@ import com.cloudera.poverty.entity.api.PersonnelInformationTable;
 import com.cloudera.poverty.entity.region.DistrictTable;
 import com.cloudera.poverty.entity.region.ResettlementPointTable;
 import com.cloudera.poverty.entity.region.TownshipTable;
+import com.cloudera.poverty.entity.vo.Percentage;
 import com.cloudera.poverty.entity.vo.PersonGetAllVo;
 import com.cloudera.poverty.entity.vo.PersonQueryVo;
 import com.cloudera.poverty.service.*;
@@ -39,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +65,8 @@ public class PersonnelInformationTableController {
     private PersonnelInformationTableService personnelInformationService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    DistrictTableService districtTableService;
 
     //人员添加
     @ApiOperation("人员基本信息添加")
@@ -283,6 +287,130 @@ public class PersonnelInformationTableController {
             vo.setPersonCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
         }
         return Lay.ok().count(total).data(records);
+    }
+
+    @ApiOperation("自定义查询百分比")
+    @RequestMapping(value = "selectPercentage", method = RequestMethod.POST, name = "API-SELECT-PERSON")
+    public Lay findPercentage(){
+        List<Percentage> percentages=personnelInformationService.percentage();
+        return Lay.ok().data(percentages);
+    }
+    @ApiOperation("自定义查询百分比2改")
+    @RequestMapping(value = "sPercentage", method = RequestMethod.POST, name = "API-SELECT-PERSON")
+    public Lay findPercentageTow()throws IllegalAccessException{
+
+        List<Percentage> percentageList=new ArrayList<>();
+        int tcsPer=0, tcsPerLen=0;
+        int tcsEnj = 0, tcsEnjLen = 0;
+        int tcsInd = 0, tcsIndLen = 0;
+        int tcsCar = 0, tcsCarLen = 0;
+
+        NumberFormat numberFormat = NumberFormat.getInstance();
+        numberFormat.setMaximumFractionDigits(2);
+
+        List<DistrictTable> list = districtTableService.list();
+        List<String> stringList=new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            DistrictTable districtTable =  list.get(i);
+            List<PersonGetAllVo> records = personnelInformationService.findPerL(districtTable.getDId());
+
+            int sumCar = 0, sumCarLen = 0;
+            int sumEnj = 0, sumEnjLen = 0;
+            int sumInd = 0, sumIndLen = 0;
+            int sumPer = 0, sumPerLen = 0;
+            for (PersonGetAllVo vo : records) {
+                int sumCompete = 0, sumLength = 0;
+                CareerPolicyTable cpt = new CareerPolicyTable();
+                BeanUtils.copyProperties(vo, cpt);
+                JSONObject obj = CompeteUtils.getCompete(cpt);
+                vo.setCareerCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+                sumCar += obj.getInteger("compete");
+                sumCarLen += obj.getInteger("length");
+                sumCompete += obj.getInteger("compete");
+                sumLength += obj.getInteger("length");
+
+                EnjoyHelpPolicyTable ehpt = new EnjoyHelpPolicyTable();
+                BeanUtils.copyProperties(vo, ehpt);
+                obj = CompeteUtils.getCompete(ehpt);
+                vo.setEnjoyCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+                sumCompete += obj.getInteger("compete");
+                sumLength += obj.getInteger("length");
+                sumEnj += obj.getInteger("compete");
+                sumEnjLen += obj.getInteger("length");
+
+                IndustrialPolicyTable ipt = new IndustrialPolicyTable();
+                BeanUtils.copyProperties(vo, ipt);
+                obj = CompeteUtils.getCompete(ipt);
+                vo.setIndustCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+                sumCompete += obj.getInteger("compete");
+                sumLength += obj.getInteger("length");
+                sumInd += obj.getInteger("compete");
+                sumIndLen += obj.getInteger("length");
+
+                PersonnelInformationTable pit = new PersonnelInformationTable();
+                BeanUtils.copyProperties(vo, pit);
+                obj = CompeteUtils.getCompete(pit);
+                vo.setPersonCompete(String.format("%s/%s", obj.getString("compete"), obj.getString("length")));
+                sumCompete += obj.getInteger("compete");
+                sumLength += obj.getInteger("length");
+                sumPer += obj.getInteger("compete");
+                sumPerLen += obj.getInteger("length");
+
+                vo.setSumCompete(sumCompete);
+                vo.setSumLength(sumLength);
+                vo.setDivCompete(new BigDecimal(sumCompete*100).divide(new BigDecimal(sumLength),4, RoundingMode.HALF_UP));
+            }
+//            JSONObject rs = new JSONObject();
+//            List<BigDecimal> values = new ArrayList<>();
+//            values.add(new BigDecimal(sumPer*100).divide(new BigDecimal(sumPerLen),2, RoundingMode.HALF_UP));
+//            values.add(new BigDecimal(sumCar*100).divide(new BigDecimal(sumCarLen),2, RoundingMode.HALF_UP));
+//            values.add(new BigDecimal(sumEnj*100).divide(new BigDecimal(sumEnjLen),2, RoundingMode.HALF_UP));
+//            values.add(new BigDecimal(sumInd*100).divide(new BigDecimal(sumIndLen),2, RoundingMode.HALF_UP));
+//            rs.put("names", Arrays.asList("人员信息", "就业创业", "已享受帮扶", "产业发展"));
+//            rs.put("values", values);
+
+            String formatPer = numberFormat.format((float)sumPer /(float) sumPerLen * 100);
+            String formatEn = numberFormat.format((float)sumEnj /(float) sumEnjLen * 100);
+            String formatCa = numberFormat.format((float)sumCar /(float) sumCarLen * 100);
+            String formatIn = numberFormat.format((float)sumInd /(float) sumIndLen * 100);
+            Percentage percentage = new Percentage(formatPer,formatIn,formatCa,formatEn);
+            percentageList.add(percentage);
+            tcsPer=tcsPer+sumPer;
+            tcsPerLen=tcsPerLen+sumPerLen;
+            tcsCar=tcsCar+sumCar;
+            tcsCarLen=tcsCarLen+sumCarLen;
+            tcsEnj=tcsEnj+sumEnj;
+            tcsEnjLen=tcsEnjLen+sumEnjLen;
+            tcsInd=tcsInd+sumInd;
+            tcsIndLen=tcsIndLen+sumIndLen;
+        }
+
+        String formatPer = numberFormat.format((float)tcsPer /(float) tcsPerLen * 100);
+        String formatEn = numberFormat.format((float)tcsEnj /(float) tcsEnjLen * 100);
+        String formatCa = numberFormat.format((float)tcsCar /(float) tcsCarLen * 100);
+        String formatIn = numberFormat.format((float)tcsInd /(float) tcsIndLen * 100);
+        Percentage percentage = new Percentage(formatPer,formatIn,formatCa,formatEn);
+        percentageList.add(percentage);
+//        List<Object> obj=new ArrayList<>();
+//
+//        List<String> listPer=new ArrayList<>();
+//        List<String> listEn=new ArrayList<>();
+//        List<String> listCa=new ArrayList<>();
+//        List<String> listIn=new ArrayList<>();
+//
+//        for (int i = 0; i < percentageList.size(); i++) {
+//            Percentage percentage1 = percentageList.get(i);
+//            listPer.add(percentage1.getPersonnelInformationTable());
+//            listCa.add(percentage1.getCareerPolicyTable());
+//            listEn.add(percentage1.getEnjoyHelpPolicyTable());
+//            listIn.add(percentage1.getIndustrialPolicyTable());
+//        }
+//        obj.add(listPer);
+//        obj.add(listEn);
+//        obj.add(listCa);
+//        obj.add(listIn);
+
+        return Lay.ok().data(percentageList);
     }
 }
 
