@@ -2,6 +2,7 @@ server:
   port: 8110
 tableau:
   server: http://192.168.101.59:8000
+#  server: http://219.144.46.98:8001
   username: cloudera
 spring:
   profiles:
